@@ -1,0 +1,127 @@
+{% extends "base.html" %}
+{% block title %}Users — Admin{% endblock %}
+{% block body_class %}admin-page{% endblock %}
+
+{% block layout %}
+{% include "partials/admin_sidebar.html" %}
+<div class="admin__main">
+  {% include "partials/admin_topbar.html" %}
+  <div class="admin__content">
+
+    <div class="page-header">
+      <h1 class="page-header__title">Users & Access Control</h1>
+    </div>
+
+    <div class="dash__row">
+      <!-- Add User -->
+      <div class="dash__card" style="flex:0 0 300px">
+        <div class="dash__card-header"><h3>Add User</h3></div>
+        <form method="POST" action="{{ url_for('admin_create_user') }}" class="form--admin">
+          <div class="form__group">
+            <label class="form__label">Full Name *</label>
+            <input type="text" name="full_name" class="form__input" required/>
+          </div>
+          <div class="form__group">
+            <label class="form__label">Email *</label>
+            <input type="email" name="email" class="form__input" required/>
+          </div>
+          <div class="form__group">
+            <label class="form__label">Role</label>
+            <select name="role" class="form__input form__select">
+              <option value="staff">Staff</option>
+              <option value="manager">Manager</option>
+              <option value="admin">Admin</option>
+            </select>
+          </div>
+          <div class="form__group">
+            <label class="form__checkbox-label">
+              <input type="checkbox" name="mfa_enabled" value="1"/>
+              <span>Enable MFA</span>
+            </label>
+          </div>
+          <button type="submit" class="btn btn--primary btn--full">
+            <i class="fas fa-user-plus"></i> Create User
+          </button>
+        </form>
+      </div>
+
+      <!-- Users List -->
+      <div class="dash__card dash__card--wide">
+        <div class="dash__card-header"><h3>All Users ({{ users|length }})</h3></div>
+        <table class="table">
+          <thead>
+            <tr><th>Name</th><th>Email</th><th>Role</th><th>MFA</th><th>Status</th><th>Created</th><th>Actions</th></tr>
+          </thead>
+          <tbody>
+            {% for user in users %}
+            <tr>
+              <td>
+                <div class="user-avatar-inline">{{ user.full_name[0]|upper }}</div>
+                {{ user.full_name }}
+              </td>
+              <td class="mono text--muted">{{ user.email }}</td>
+              <td>
+                <span class="badge {% if user.role == 'admin' %}badge--danger{% elif user.role == 'manager' %}badge--accent{% else %}badge--outline{% endif %}">
+                  {{ user.role | title }}
+                </span>
+              </td>
+              <td>
+                {% if user.mfa_enabled %}
+                <i class="fas fa-shield-alt text--green"></i>
+                {% else %}
+                <i class="fas fa-shield-alt text--muted"></i>
+                {% endif %}
+              </td>
+              <td>
+                <span class="badge {% if user.is_active %}badge--green{% else %}badge--outline{% endif %}">
+                  {{ 'Active' if user.is_active else 'Inactive' }}
+                </span>
+              </td>
+              <td class="mono text--muted">{{ user.created_at[:10] }}</td>
+              <td>
+                {% if user.id != session.user_id %}
+                <form action="{{ url_for('admin_delete_user', uid=user.id) }}" method="POST"
+                      onsubmit="return confirm('Hapus user ini?')" style="display:inline">
+                  <button class="btn btn--danger btn--xs"><i class="fas fa-trash"></i></button>
+                </form>
+                {% else %}
+                <span class="text--muted">(you)</span>
+                {% endif %}
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- RBAC Info -->
+    <div class="dash__card">
+      <div class="dash__card-header"><h3>Role-Based Access Control (RBAC)</h3></div>
+      <table class="table">
+        <thead><tr><th>Permission</th><th>Staff</th><th>Manager</th><th>Admin</th></tr></thead>
+        <tbody>
+          {% for perm, staff, mgr, adm in [
+            ('View Dashboard','✓','✓','✓'),
+            ('Manage Projects','✗','✓','✓'),
+            ('Manage Skills','✓','✓','✓'),
+            ('View Messages','✓','✓','✓'),
+            ('View Audit Logs','✗','✓','✓'),
+            ('Manage Users','✗','✗','✓'),
+            ('Edit Settings','✗','✗','✓'),
+            ('Delete Records','✗','✗','✓'),
+          ] %}
+          <tr>
+            <td>{{ perm }}</td>
+            <td class="text-center {% if staff=='✓' %}text--green{% else %}text--muted{% endif %}">{{ staff }}</td>
+            <td class="text-center {% if mgr=='✓' %}text--green{% else %}text--muted{% endif %}">{{ mgr }}</td>
+            <td class="text-center {% if adm=='✓' %}text--green{% else %}text--muted{% endif %}">{{ adm }}</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+
+  </div>
+</div>
+{% endblock %}

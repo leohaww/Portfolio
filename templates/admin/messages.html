@@ -1,0 +1,74 @@
+{% extends "base.html" %}
+{% block title %}Messages — Admin{% endblock %}
+{% block body_class %}admin-page{% endblock %}
+
+{% block layout %}
+{% include "partials/admin_sidebar.html" %}
+<div class="admin__main">
+  {% include "partials/admin_topbar.html" %}
+  <div class="admin__content">
+
+    <div class="page-header">
+      <h1 class="page-header__title">Contact Messages</h1>
+    </div>
+
+    <div class="dash__card">
+      <div class="dash__card-header">
+        <h3>Inbox ({{ messages|length }})</h3>
+        {% if unread_messages > 0 %}
+        <span class="badge badge--danger">{{ unread_messages }} Unread</span>
+        {% endif %}
+      </div>
+      <table class="table">
+        <thead>
+          <tr><th></th><th>Name</th><th>Email</th><th>Subject</th><th>Date</th><th>IP</th><th>Action</th></tr>
+        </thead>
+        <tbody>
+          {% for msg in messages %}
+          <tr class="{% if not msg.is_read %}table__row--unread{% endif %}">
+            <td>
+              {% if not msg.is_read %}
+              <span class="badge badge--danger" style="font-size:.65rem">NEW</span>
+              {% endif %}
+            </td>
+            <td><strong>{{ msg.name }}</strong></td>
+            <td class="mono">{{ msg.email }}</td>
+            <td>{{ msg.subject }}</td>
+            <td class="mono text--muted">{{ msg.created_at[:16] }}</td>
+            <td class="mono text--muted">{{ msg.ip_address }}</td>
+            <td>
+              {% if not msg.is_read %}
+              <form action="{{ url_for('admin_read_message', mid=msg.id) }}" method="POST" style="display:inline">
+                <button class="btn btn--ghost btn--xs" title="Mark as read">
+                  <i class="fas fa-check"></i>
+                </button>
+              </form>
+              {% endif %}
+              <button class="btn btn--ghost btn--xs" onclick="showMsg({{ loop.index0 }})">
+                <i class="fas fa-eye"></i>
+              </button>
+            </td>
+          </tr>
+          <tr class="msg-detail" id="msgDetail{{ loop.index0 }}" style="display:none">
+            <td colspan="7">
+              <div class="msg-detail__body">
+                <strong>Message:</strong>
+                <p>{{ msg.message }}</p>
+              </div>
+            </td>
+          </tr>
+          {% else %}
+          <tr><td colspan="7" class="text-center text--muted p-4">No messages yet.</td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+<script>
+function showMsg(i) {
+  const el = document.getElementById('msgDetail'+i);
+  el.style.display = el.style.display === 'none' ? '' : 'none';
+}
+</script>
+{% endblock %}

@@ -1,0 +1,85 @@
+{% extends "base.html" %}
+{% block title %}Certificates — Admin{% endblock %}
+{% block body_class %}admin-page{% endblock %}
+
+{% block layout %}
+{% include "partials/admin_sidebar.html" %}
+<div class="admin__main">
+  {% include "partials/admin_topbar.html" %}
+  <div class="admin__content">
+
+    <div class="page-header">
+      <h1 class="page-header__title">Certificates</h1>
+    </div>
+
+    <div class="dash__row">
+      <div class="dash__card" style="flex:0 0 320px">
+        <div class="dash__card-header"><h3>Add Certificate</h3></div>
+        <form method="POST" action="{{ url_for('admin_create_certificate') }}" enctype="multipart/form-data" class="form--admin">
+          <div class="form__group">
+            <label class="form__label">Certificate Name *</label>
+            <input type="text" name="name" class="form__input" required/>
+          </div>
+          <div class="form__group">
+            <label class="form__label">Issuer</label>
+            <input type="text" name="issuer" class="form__input" placeholder="Google, AWS, Coursera..."/>
+          </div>
+          <div class="form__group">
+            <label class="form__label">Issue Date</label>
+            <input type="text" name="issue_date" class="form__input" placeholder="Jan 2024"/>
+          </div>
+          <div class="form__group">
+            <label class="form__label">Credential ID</label>
+            <input type="text" name="credential_id" class="form__input"/>
+          </div>
+          <div class="form__group">
+            <label class="form__label">Credential URL</label>
+            <input type="url" name="credential_url" class="form__input" placeholder="https://..."/>
+          </div>
+          <div class="form__group">
+            <label class="form__label">Certificate Image</label>
+            <input type="file" name="image" class="form__input" accept="image/*"/>
+          </div>
+          <button type="submit" class="btn btn--primary btn--full">
+            <i class="fas fa-plus"></i> Add Certificate
+          </button>
+        </form>
+      </div>
+
+      <div class="dash__card dash__card--wide">
+        <div class="dash__card-header"><h3>All Certificates ({{ certificates|length }})</h3></div>
+        <div class="cert__grid">
+          {% for cert in certificates %}
+          <div class="cert-card">
+            {% if cert.image_url %}
+            <img src="{{ url_for('static', filename=cert.image_url) }}" alt="{{ cert.name }}" class="cert-card__img"/>
+            {% else %}
+            <div class="cert-card__icon"><i class="fas fa-award"></i></div>
+            {% endif %}
+            <div class="cert-card__body">
+              <h4 class="cert-card__name">{{ cert.name }}</h4>
+              <p class="cert-card__issuer">{{ cert.issuer }}</p>
+              <p class="cert-card__date">{{ cert.issue_date }}</p>
+              <div style="display:flex;gap:.5rem;margin-top:.5rem">
+                {% if cert.credential_url %}
+                <a href="{{ cert.credential_url }}" target="_blank" class="btn btn--ghost btn--xs">
+                  <i class="fas fa-external-link-alt"></i>
+                </a>
+                {% endif %}
+                <form action="{{ url_for('admin_delete_certificate', cid=cert.id) }}" method="POST"
+                      onsubmit="return confirm('Hapus?')" style="display:inline">
+                  <button class="btn btn--danger btn--xs"><i class="fas fa-trash"></i></button>
+                </form>
+              </div>
+            </div>
+          </div>
+          {% else %}
+          <p class="text--muted">Belum ada sertifikat.</p>
+          {% endfor %}
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,84 @@
+{% extends "base.html" %}
+{% block title %}Skills — Admin{% endblock %}
+{% block body_class %}admin-page{% endblock %}
+
+{% block layout %}
+{% include "partials/admin_sidebar.html" %}
+<div class="admin__main">
+  {% include "partials/admin_topbar.html" %}
+  <div class="admin__content">
+
+    <div class="page-header">
+      <div>
+        <h1 class="page-header__title">Skills</h1>
+        <p class="page-header__sub">Manage your technical skills</p>
+      </div>
+    </div>
+
+    <div class="dash__row">
+      <!-- Add Skill Form -->
+      <div class="dash__card" style="flex:0 0 320px">
+        <div class="dash__card-header"><h3>Add Skill</h3></div>
+        <form method="POST" action="{{ url_for('admin_create_skill') }}" class="form--admin">
+          <div class="form__group">
+            <label class="form__label">Skill Name *</label>
+            <input type="text" name="name" class="form__input" required placeholder="Python"/>
+          </div>
+          <div class="form__group">
+            <label class="form__label">Category</label>
+            <select name="category" class="form__input form__select">
+              {% for cat in ['Backend','Frontend','Database','DevOps','Cloud','Mobile','Other'] %}
+              <option value="{{ cat }}">{{ cat }}</option>
+              {% endfor %}
+            </select>
+          </div>
+          <div class="form__group">
+            <label class="form__label">Level (0–100): <span id="levelVal">80</span>%</label>
+            <input type="range" name="level" min="0" max="100" value="80" class="form__range"
+                   oninput="document.getElementById('levelVal').textContent=this.value"/>
+          </div>
+          <div class="form__group">
+            <label class="form__label">Devicon Class</label>
+            <input type="text" name="icon" class="form__input" placeholder="devicon-python-plain"/>
+          </div>
+          <button type="submit" class="btn btn--primary btn--full">
+            <i class="fas fa-plus"></i> Add Skill
+          </button>
+        </form>
+      </div>
+
+      <!-- Skills List -->
+      <div class="dash__card dash__card--wide">
+        <div class="dash__card-header"><h3>All Skills ({{ skills|length }})</h3></div>
+        <table class="table">
+          <thead><tr><th>Icon</th><th>Name</th><th>Category</th><th>Level</th><th>Actions</th></tr></thead>
+          <tbody>
+            {% for skill in skills %}
+            <tr>
+              <td><i class="{{ skill.icon }}" style="font-size:1.4rem"></i></td>
+              <td><strong>{{ skill.name }}</strong></td>
+              <td><span class="badge badge--outline">{{ skill.category }}</span></td>
+              <td>
+                <div class="inline-bar">
+                  <div class="inline-bar__fill" style="width:{{ skill.level }}%"></div>
+                  <span>{{ skill.level }}%</span>
+                </div>
+              </td>
+              <td>
+                <form action="{{ url_for('admin_delete_skill', sid=skill.id) }}" method="POST"
+                      onsubmit="return confirm('Hapus skill ini?')" style="display:inline">
+                  <button class="btn btn--danger btn--xs"><i class="fas fa-trash"></i></button>
+                </form>
+              </td>
+            </tr>
+            {% else %}
+            <tr><td colspan="5" class="text-center text--muted">Belum ada skill.</td></tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+  </div>
+</div>
+{% endblock %}

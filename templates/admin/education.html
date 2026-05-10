@@ -1,0 +1,83 @@
+{% extends "base.html" %}
+{% block title %}Education — Admin{% endblock %}
+{% block body_class %}admin-page{% endblock %}
+
+{% block layout %}
+{% include "partials/admin_sidebar.html" %}
+<div class="admin__main">
+  {% include "partials/admin_topbar.html" %}
+  <div class="admin__content">
+
+    <div class="page-header">
+      <h1 class="page-header__title">Education</h1>
+    </div>
+
+    <div class="dash__row">
+      <div class="dash__card" style="flex:0 0 320px">
+        <div class="dash__card-header"><h3>Add Education</h3></div>
+        <form method="POST" action="{{ url_for('admin_create_education') }}" class="form--admin">
+          <div class="form__group">
+            <label class="form__label">Institution *</label>
+            <input type="text" name="institution" class="form__input" required/>
+          </div>
+          <div class="form__group">
+            <label class="form__label">Degree</label>
+            <input type="text" name="degree" class="form__input" placeholder="Bachelor of Science"/>
+          </div>
+          <div class="form__group">
+            <label class="form__label">Field of Study</label>
+            <input type="text" name="field" class="form__input" placeholder="Computer Science"/>
+          </div>
+          <div class="form__row">
+            <div class="form__group">
+              <label class="form__label">Start Year</label>
+              <input type="text" name="start_year" class="form__input" placeholder="2018"/>
+            </div>
+            <div class="form__group">
+              <label class="form__label">End Year</label>
+              <input type="text" name="end_year" class="form__input" placeholder="2022"/>
+            </div>
+          </div>
+          <div class="form__group">
+            <label class="form__label">GPA</label>
+            <input type="text" name="gpa" class="form__input" placeholder="3.85"/>
+          </div>
+          <div class="form__group">
+            <label class="form__label">Description</label>
+            <textarea name="description" class="form__input form__textarea" rows="2"></textarea>
+          </div>
+          <button type="submit" class="btn btn--primary btn--full">
+            <i class="fas fa-plus"></i> Add Education
+          </button>
+        </form>
+      </div>
+
+      <div class="dash__card dash__card--wide">
+        <div class="dash__card-header"><h3>Education Records ({{ educations|length }})</h3></div>
+        <table class="table">
+          <thead><tr><th>Institution</th><th>Degree & Field</th><th>Period</th><th>GPA</th><th>Actions</th></tr></thead>
+          <tbody>
+            {% for edu in educations %}
+            <tr>
+              <td><strong>{{ edu.institution }}</strong></td>
+              <td>{{ edu.degree }} {% if edu.field %}in {{ edu.field }}{% endif %}</td>
+              <td class="mono text--muted">{{ edu.start_year }} – {{ edu.end_year or 'Present' }}</td>
+              <td>{% if edu.gpa %}<span class="badge badge--outline">{{ edu.gpa }}</span>{% endif %}</td>
+              <td>
+                <form action="{{ url_for('admin_delete_education', eid=edu.id) }}" method="POST"
+                      onsubmit="return confirm('Hapus?')" style="display:inline">
+                  <button class="btn btn--danger btn--xs"><i class="fas fa-trash"></i></button>
+                </form>
+              </td>
+            </tr>
+            {% else %}
+            <tr><td colspan="5" class="text-center text--muted">Belum ada data pendidikan.</td></tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+  </div>
+</div>
+{% endblock %}

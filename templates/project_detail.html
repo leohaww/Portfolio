@@ -1,0 +1,77 @@
+{% extends "base.html" %}
+{% block title %}{{ project.title }}{% endblock %}
+{% block body_class %}public-page{% endblock %}
+
+{% block layout %}
+<nav class="nav" id="mainNav">
+  <div class="nav__inner">
+    <a href="{{ url_for('index') }}" class="nav__logo">
+      <span class="nav__logo-dot"></span>
+      <span>{{ site_settings.owner_name.split()[0] | upper }}</span>
+    </a>
+    <ul class="nav__links">
+      <li><a href="{{ url_for('index') }}" class="nav__link">Home</a></li>
+      <li><a href="{{ url_for('projects') }}" class="nav__link nav__link--active">Projects</a></li>
+      <li><a href="{{ url_for('contact') }}" class="nav__link">Contact</a></li>
+    </ul>
+    <div class="nav__actions">
+      <a href="{{ url_for('auth_login') }}" class="btn btn--ghost btn--sm">
+        <i class="fas fa-lock"></i> Admin
+      </a>
+    </div>
+  </div>
+</nav>
+
+<div class="container" style="padding-top:7rem;padding-bottom:4rem;max-width:900px">
+  <a href="{{ url_for('projects') }}" class="btn btn--ghost btn--sm" style="margin-bottom:2rem">
+    <i class="fas fa-arrow-left"></i> All Projects
+  </a>
+
+  {% if project.image_url %}
+  <img src="{{ url_for('static', filename=project.image_url) }}" alt="{{ project.title }}"
+       style="width:100%;border-radius:1rem;margin-bottom:2rem;max-height:420px;object-fit:cover"/>
+  {% endif %}
+
+  <div style="display:flex;gap:.5rem;flex-wrap:wrap;margin-bottom:1rem">
+    {% if project.is_featured %}<span class="badge badge--accent">Featured</span>{% endif %}
+    {% if project.category %}<span class="badge badge--outline">{{ project.category }}</span>{% endif %}
+    <span class="badge badge--outline mono">{{ project.created_at[:10] }}</span>
+  </div>
+
+  <h1 style="font-family:'Syne',sans-serif;font-size:2.5rem;margin-bottom:1rem">{{ project.title }}</h1>
+
+  {% if project.short_desc %}
+  <p style="font-size:1.2rem;color:var(--muted);margin-bottom:1.5rem">{{ project.short_desc }}</p>
+  {% endif %}
+
+  <div style="display:flex;gap:1rem;margin-bottom:2rem">
+    {% if project.demo_url %}
+    <a href="{{ project.demo_url }}" target="_blank" class="btn btn--primary">
+      <i class="fas fa-external-link-alt"></i> Live Demo
+    </a>
+    {% endif %}
+    {% if project.github_url %}
+    <a href="{{ project.github_url }}" target="_blank" class="btn btn--outline">
+      <i class="fab fa-github"></i> Source Code
+    </a>
+    {% endif %}
+  </div>
+
+  <div class="dash__card" style="margin-bottom:2rem">
+    <p style="line-height:1.9;color:var(--text-secondary)">{{ project.description }}</p>
+  </div>
+
+  <h3 style="margin-bottom:1rem">Tech Stack</h3>
+  <div class="project-card__stack">
+    {% for tech in project.tech_stack.split(',') %}
+    <span class="tech-tag">{{ tech.strip() }}</span>
+    {% endfor %}
+  </div>
+</div>
+
+<footer class="footer">
+  <div class="container footer__inner">
+    <span class="footer__copy">© {{ now.year }} {{ site_settings.owner_name }}</span>
+  </div>
+</footer>
+{% endblock %}

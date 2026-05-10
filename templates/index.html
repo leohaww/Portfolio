@@ -1,0 +1,505 @@
+{% extends "base.html" %}
+{% block title %}Home{% endblock %}
+{% block body_class %}public-page{% endblock %}
+
+{% block layout %}
+<!-- ═══════════════════════════════════════════
+     PUBLIC NAVIGATION
+═══════════════════════════════════════════ -->
+<nav class="nav" id="mainNav">
+  <div class="nav__inner">
+    <a href="{{ url_for('index') }}" class="nav__logo">
+      <span class="nav__logo-dot"></span>
+      <span>{{ site_settings.owner_name.split()[0] | upper }}</span>
+    </a>
+    <ul class="nav__links">
+      <li><a href="#about" class="nav__link">About</a></li>
+      <li><a href="#skills" class="nav__link">Skills</a></li>
+      <li><a href="#experience" class="nav__link">Experience</a></li>
+      <li><a href="#projects" class="nav__link">Projects</a></li>
+      <li><a href="#education" class="nav__link">Education</a></li>
+      <li><a href="#contact" class="nav__link">Contact</a></li>
+    </ul>
+    <div class="nav__actions">
+      <a href="{{ url_for('auth_login') }}" class="btn btn--ghost btn--sm">
+        <i class="fas fa-lock"></i> Admin
+      </a>
+      <button class="nav__hamburger" id="hamburger" aria-label="Menu">
+        <span></span><span></span><span></span>
+      </button>
+    </div>
+  </div>
+</nav>
+
+<!-- Mobile Drawer -->
+<div class="nav__drawer" id="navDrawer">
+  <a href="#about">About</a>
+  <a href="#skills">Skills</a>
+  <a href="#experience">Experience</a>
+  <a href="#projects">Projects</a>
+  <a href="#education">Education</a>
+  <a href="#contact">Contact</a>
+</div>
+<div class="nav__backdrop" id="navBackdrop"></div>
+
+<!-- ═══════════════════════════════════════════
+     HERO
+═══════════════════════════════════════════ -->
+<section class="hero" id="hero">
+  <div class="hero__grid-bg" aria-hidden="true"></div>
+  <div class="hero__glow hero__glow--1" aria-hidden="true"></div>
+  <div class="hero__glow hero__glow--2" aria-hidden="true"></div>
+
+  <!-- ── Floating Tech Icons ──────────────── -->
+  <div class="hero__floating-icons" aria-hidden="true" id="heroFloatingIcons">
+    <!-- Row 1 - right cluster -->
+    <span class="ficon ficon--1"  style="--delay:0s;   --x:72%; --y:14%; --size:2.6rem; --color:#61dafb; --dur:14s;"><i class="devicon-react-original"></i></span>
+    <span class="ficon ficon--2"  style="--delay:.8s;  --x:82%; --y:28%; --size:2.1rem; --color:#f7df1e; --dur:16s;"><i class="devicon-javascript-plain"></i></span>
+    <span class="ficon ficon--3"  style="--delay:1.4s; --x:88%; --y:52%; --size:1.9rem; --color:#3776ab; --dur:12s;"><i class="devicon-python-plain"></i></span>
+    <span class="ficon ficon--4"  style="--delay:2s;   --x:76%; --y:68%; --size:2.3rem; --color:#2496ed; --dur:18s;"><i class="devicon-docker-plain"></i></span>
+    <span class="ficon ficon--5"  style="--delay:.4s;  --x:63%; --y:82%; --size:1.8rem; --color:#336791; --dur:15s;"><i class="devicon-postgresql-plain"></i></span>
+    <!-- Row 2 - left cluster -->
+    <span class="ficon ficon--6"  style="--delay:1s;   --x:5%;  --y:22%; --size:2rem;   --color:#e34f26; --dur:17s;"><i class="devicon-html5-plain"></i></span>
+    <span class="ficon ficon--7"  style="--delay:2.5s; --x:10%; --y:48%; --size:1.7rem; --color:#dc382d; --dur:13s;"><i class="devicon-redis-plain"></i></span>
+    <span class="ficon ficon--8"  style="--delay:.2s;  --x:4%;  --y:72%; --size:2.2rem; --color:#ff9900; --dur:19s;"><i class="devicon-amazonwebservices-original"></i></span>
+    <span class="ficon ficon--9"  style="--delay:3s;   --x:16%; --y:85%; --size:1.8rem; --color:#f05032; --dur:14s;"><i class="devicon-git-plain"></i></span>
+    <!-- Row 3 - top scatter -->
+    <span class="ficon ficon--10" style="--delay:1.8s; --x:42%; --y:8%;  --size:1.6rem; --color:#06b6d4; --dur:20s;"><i class="devicon-tailwindcss-plain"></i></span>
+    <span class="ficon ficon--11" style="--delay:3.5s; --x:55%; --y:16%; --size:2rem;   --color:#000;    --dur:16s;"><i class="devicon-flask-original" style="color:#a78bfa;"></i></span>
+    <span class="ficon ficon--12" style="--delay:2.2s; --x:30%; --y:78%; --size:1.7rem; --color:#326ce5; --dur:15s;"><i class="devicon-kubernetes-plain"></i></span>
+    <!-- Geometric HUD brackets (kept) -->
+    <svg class="hud-hex" style="top:10%;right:6%;width:260px;animation:rotateGlow 28s linear infinite;" viewBox="0 0 200 200" fill="none">
+      <polygon points="100,10 180,55 180,145 100,190 20,145 20,55" stroke="#8b5cf6" stroke-width="1" opacity=".15"/>
+      <polygon points="100,35 155,67 155,133 100,165 45,133 45,67"  stroke="#00f5ff" stroke-width=".6" opacity=".1"/>
+    </svg>
+    <svg class="hud-corner" style="top:13%;right:4%;" viewBox="0 0 60 60" fill="none"><path d="M60,0 L60,22 M60,0 L38,0" stroke="#00f5ff" stroke-width="1.5" opacity=".35"/></svg>
+    <svg class="hud-corner" style="bottom:22%;left:2%;" viewBox="0 0 60 60" fill="none"><path d="M0,60 L0,38 M0,60 L22,60" stroke="#8b5cf6" stroke-width="1.5" opacity=".25"/></svg>
+    <svg style="position:absolute;bottom:32%;right:14%;width:120px;opacity:.06;animation:rotateGlow 50s linear infinite reverse;" viewBox="0 0 120 120" fill="none">
+      <circle cx="60" cy="60" r="55" stroke="#a78bfa" stroke-width="1" stroke-dasharray="3 7"/>
+    </svg>
+    <div style="position:absolute;top:38%;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,rgba(0,245,255,.07),transparent);"></div>
+    <div style="position:absolute;top:62%;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,rgba(139,92,246,.05),transparent);"></div>
+  </div>
+
+  <div class="hero__content container">
+    <div class="hero__badge">
+      <span class="hero__badge-dot"></span>
+      Available for opportunities
+    </div>
+    <h1 class="hero__name">
+      <span class="hero__name-line">Hi, I'm</span>
+      <span class="hero__name-main">{{ site_settings.owner_name }}</span>
+    </h1>
+    <p class="hero__title">{{ site_settings.owner_title }}</p>
+    <p class="hero__sub">
+      Building enterprise-grade digital products with modern architecture,
+      clean code, and obsessive attention to performance.
+    </p>
+
+    <div class="hero__cta">
+      <a href="#projects" class="btn btn--primary btn--lg">
+        <i class="fas fa-rocket"></i> View Projects
+      </a>
+      <a href="#contact" class="btn btn--outline btn--lg">
+        <i class="fas fa-paper-plane"></i> Contact Me
+      </a>
+    </div>
+
+    <div class="hero__stats">
+      <div class="hero__stat">
+        <span class="hero__stat-num" data-count="{{ projects|length + 10 }}">0</span>
+        <span class="hero__stat-label">Projects</span>
+      </div>
+      <div class="hero__stat">
+        <span class="hero__stat-num" data-count="{{ experiences|length + 3 }}">0</span>
+        <span class="hero__stat-label">Years Exp.</span>
+      </div>
+      <div class="hero__stat">
+        <span class="hero__stat-num" data-count="{{ certificates|length }}">0</span>
+        <span class="hero__stat-label">Certificates</span>
+      </div>
+      <div class="hero__stat">
+        <span class="hero__stat-num" data-count="{{ stats.total }}">0</span>
+        <span class="hero__stat-label">Visitors</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="hero__scroll-hint">
+    <span>Scroll</span>
+    <div class="hero__scroll-line"></div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════
+     ABOUT
+═══════════════════════════════════════════ -->
+<section class="section" id="about">
+  <div class="container">
+    <div class="section__header">
+      <span class="section__label">01 / About</span>
+      <h2 class="section__title">Who I Am</h2>
+    </div>
+    <div class="about__grid">
+      <div class="about__avatar-wrap">
+        {% if site_settings.owner_avatar %}
+        <img src="{{ url_for('static', filename=site_settings.owner_avatar) }}" alt="{{ site_settings.owner_name }}" class="about__avatar"/>
+        {% else %}
+        <div class="about__avatar-placeholder">
+          <i class="fas fa-user"></i>
+        </div>
+        {% endif %}
+        <div class="about__card">
+          <div class="about__card-item"><i class="fas fa-map-marker-alt"></i> {{ site_settings.owner_location }}</div>
+          <div class="about__card-item"><i class="fas fa-envelope"></i> {{ site_settings.owner_email }}</div>
+          <div class="about__card-item"><i class="fas fa-phone"></i> {{ site_settings.owner_phone }}</div>
+        </div>
+        <div class="about__socials">
+          {% if site_settings.github_url %}<a href="{{ site_settings.github_url }}" target="_blank" class="about__social" title="GitHub"><i class="fab fa-github"></i></a>{% endif %}
+          {% if site_settings.linkedin_url %}<a href="{{ site_settings.linkedin_url }}" target="_blank" class="about__social" title="LinkedIn"><i class="fab fa-linkedin"></i></a>{% endif %}
+          {% if site_settings.instagram_url %}<a href="{{ site_settings.instagram_url }}" target="_blank" class="about__social" title="Instagram"><i class="fab fa-instagram"></i></a>{% endif %}
+          {% if site_settings.tiktok_url %}<a href="{{ site_settings.tiktok_url }}" target="_blank" class="about__social" title="TikTok"><i class="fab fa-tiktok"></i></a>{% endif %}
+          {% if site_settings.upwork_url %}<a href="{{ site_settings.upwork_url }}" target="_blank" class="about__social" title="Upwork"><i class="fas fa-briefcase"></i></a>{% endif %}
+          {% if site_settings.lynk_url %}<a href="{{ site_settings.lynk_url }}" target="_blank" class="about__social" title="Lynk.id"><i class="fas fa-link"></i></a>{% endif %}
+          {% if site_settings.twitter_url %}<a href="{{ site_settings.twitter_url }}" target="_blank" class="about__social" title="Twitter"><i class="fab fa-twitter"></i></a>{% endif %}
+        </div>
+      </div>
+      <div class="about__text">
+        <p class="about__lead">
+          A passionate <strong>{{ site_settings.owner_title }}</strong> with a strong foundation in building
+          scalable, secure, and high-performance applications for enterprise environments.
+        </p>
+        <p>
+          I specialize in designing robust backend systems, intuitive frontends, and cloud-native
+          infrastructure. My work combines technical depth with product thinking to deliver solutions
+          that genuinely move the needle.
+        </p>
+        <p>
+          When I'm not coding, I contribute to open-source projects, mentor junior developers,
+          and explore emerging tech trends in AI/ML and distributed systems.
+        </p>
+        <div class="about__tags">
+          <span class="tag">Problem Solver</span>
+          <span class="tag">Team Player</span>
+          <span class="tag">Clean Code Advocate</span>
+          <span class="tag">Agile / Scrum</span>
+          <span class="tag">Open Source Contributor</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════
+     SKILLS
+═══════════════════════════════════════════ -->
+<section class="section section--dark" id="skills">
+  <div class="container">
+    <div class="section__header">
+      <span class="section__label">02 / Skills</span>
+      <h2 class="section__title">Technical Expertise</h2>
+    </div>
+
+    {% set categories = skills | map(attribute='category') | unique | list %}
+    <div class="skills__tabs">
+      <button class="skills__tab skills__tab--active" data-filter="all">All</button>
+      {% for cat in categories %}
+      <button class="skills__tab" data-filter="{{ cat }}">{{ cat }}</button>
+      {% endfor %}
+    </div>
+
+    <div class="skills__grid" id="skillsGrid">
+      {% for skill in skills %}
+      <div class="skill-card" data-category="{{ skill.category }}">
+        <div class="skill-card__icon-wrap">
+          <div class="skill-card__icon-bg"></div>
+          <i class="{{ skill.icon }} skill-card__icon"></i>
+        </div>
+        <div class="skill-card__info">
+          <span class="skill-card__name">{{ skill.name }}</span>
+          <span class="skill-card__cat">{{ skill.category }}</span>
+          <div class="skill-card__bar">
+            <div class="skill-card__fill" style="width:0%" data-width="{{ skill.level }}%"></div>
+          </div>
+        </div>
+        <span class="skill-card__pct">{{ skill.level }}%</span>
+      </div>
+      {% else %}
+      <p class="empty-state">Belum ada skill yang ditambahkan.</p>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════
+     EXPERIENCE
+═══════════════════════════════════════════ -->
+<section class="section" id="experience">
+  <div class="container">
+    <div class="section__header">
+      <span class="section__label">03 / Experience</span>
+      <h2 class="section__title">Work History</h2>
+    </div>
+    <div class="timeline">
+      {% for exp in experiences %}
+      <div class="timeline__item reveal">
+        <div class="timeline__dot {% if exp.is_current %}timeline__dot--active{% endif %}"></div>
+        <div class="timeline__card">
+          <div class="timeline__header">
+            <div>
+              <h3 class="timeline__role">{{ exp.role }}</h3>
+              <p class="timeline__company">
+                <i class="fas fa-building"></i> {{ exp.company }}
+                {% if exp.location %} &nbsp;·&nbsp; <i class="fas fa-map-marker-alt"></i> {{ exp.location }}{% endif %}
+              </p>
+            </div>
+            <span class="timeline__period">
+              {{ exp.start_date }}
+              {% if exp.is_current %}<span class="badge badge--green">Current</span>
+              {% elif exp.end_date %} — {{ exp.end_date }}{% endif %}
+            </span>
+          </div>
+          {% if exp.description %}
+          <p class="timeline__desc">{{ exp.description }}</p>
+          {% endif %}
+        </div>
+      </div>
+      {% else %}
+      <p class="empty-state">Belum ada pengalaman kerja yang ditambahkan.</p>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════
+     PROJECTS
+═══════════════════════════════════════════ -->
+<section class="section section--dark" id="projects">
+  <div class="container">
+    <div class="section__header">
+      <span class="section__label">04 / Projects</span>
+      <h2 class="section__title">Featured Work</h2>
+      <a href="{{ url_for('projects') }}" class="section__link">
+        View All <i class="fas fa-arrow-right"></i>
+      </a>
+    </div>
+    <div class="projects__grid">
+      {% for project in projects %}
+      <div class="project-card reveal">
+        <div class="project-card__img">
+          {% if project.image_url %}
+          <img src="{{ url_for('static', filename=project.image_url) }}" alt="{{ project.title }}" loading="lazy"/>
+          {% else %}
+          <div class="project-card__img-placeholder">
+            <i class="fas fa-code"></i>
+          </div>
+          {% endif %}
+          <div class="project-card__overlay">
+            {% if project.demo_url %}
+            <a href="{{ project.demo_url }}" target="_blank" class="project-card__action">
+              <i class="fas fa-external-link-alt"></i>
+            </a>
+            {% endif %}
+            {% if project.github_url %}
+            <a href="{{ project.github_url }}" target="_blank" class="project-card__action">
+              <i class="fab fa-github"></i>
+            </a>
+            {% endif %}
+            <a href="{{ url_for('project_detail', project_id=project.id) }}" class="project-card__action">
+              <i class="fas fa-eye"></i>
+            </a>
+          </div>
+        </div>
+        <div class="project-card__body">
+          {% if project.is_featured %}
+          <span class="badge badge--accent">Featured</span>
+          {% endif %}
+          {% if project.category %}
+          <span class="badge badge--outline">{{ project.category }}</span>
+          {% endif %}
+          <h3 class="project-card__title">{{ project.title }}</h3>
+          <p class="project-card__desc">{{ project.short_desc or project.description | truncate(120) }}</p>
+          <div class="project-card__stack">
+            {% for tech in project.tech_stack.split(',') %}
+            <span class="tech-tag">{{ tech.strip() }}</span>
+            {% endfor %}
+          </div>
+        </div>
+      </div>
+      {% else %}
+      <p class="empty-state">Belum ada proyek yang ditampilkan.</p>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════
+     EDUCATION & CERTIFICATES
+═══════════════════════════════════════════ -->
+<section class="section" id="education">
+  <div class="container">
+    <div class="section__header">
+      <span class="section__label">05 / Education & Credentials</span>
+      <h2 class="section__title">Academic & Certifications</h2>
+    </div>
+    <div class="edu-cert__grid">
+      <!-- Education -->
+      <div>
+        <h3 class="subsection__title"><i class="fas fa-graduation-cap"></i> Education</h3>
+        {% for edu in educations %}
+        <div class="edu-card reveal">
+          <div class="edu-card__year">{{ edu.start_year }} – {{ edu.end_year or 'Present' }}</div>
+          <div class="edu-card__body">
+            <h4>{{ edu.degree }} {% if edu.field %}in {{ edu.field }}{% endif %}</h4>
+            <p class="edu-card__inst">{{ edu.institution }}</p>
+            {% if edu.gpa %}<span class="badge badge--outline">GPA: {{ edu.gpa }}</span>{% endif %}
+            {% if edu.description %}<p>{{ edu.description }}</p>{% endif %}
+          </div>
+        </div>
+        {% else %}
+        <p class="empty-state">Belum ada data pendidikan.</p>
+        {% endfor %}
+      </div>
+      <!-- Certificates -->
+      <div>
+        <h3 class="subsection__title"><i class="fas fa-certificate"></i> Certificates</h3>
+        <div class="cert__grid">
+          {% for cert in certificates %}
+          <div class="cert-card reveal">
+            {% if cert.image_url %}
+            <img src="{{ url_for('static', filename=cert.image_url) }}" alt="{{ cert.name }}" class="cert-card__img"/>
+            {% else %}
+            <div class="cert-card__icon"><i class="fas fa-award"></i></div>
+            {% endif %}
+            <div class="cert-card__body">
+              <h4 class="cert-card__name">{{ cert.name }}</h4>
+              <p class="cert-card__issuer">{{ cert.issuer }}</p>
+              {% if cert.issue_date %}<p class="cert-card__date">{{ cert.issue_date }}</p>{% endif %}
+              {% if cert.credential_url %}
+              <a href="{{ cert.credential_url }}" target="_blank" class="cert-card__link">
+                Verify <i class="fas fa-external-link-alt"></i>
+              </a>
+              {% endif %}
+            </div>
+          </div>
+          {% else %}
+          <p class="empty-state">Belum ada sertifikat.</p>
+          {% endfor %}
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════
+     CONTACT
+═══════════════════════════════════════════ -->
+<section class="section section--dark" id="contact">
+  <div class="container">
+    <div class="section__header">
+      <span class="section__label">06 / Contact</span>
+      <h2 class="section__title">Let's Work Together</h2>
+    </div>
+    <div class="contact__grid">
+      <div class="contact__info">
+        <p class="contact__intro">
+          Have a project in mind or looking for an experienced engineer?
+          I'd love to hear from you.
+        </p>
+        <div class="contact__detail"><i class="fas fa-envelope"></i> {{ site_settings.owner_email }}</div>
+        <div class="contact__detail"><i class="fas fa-phone"></i> {{ site_settings.owner_phone }}</div>
+        <div class="contact__detail"><i class="fas fa-map-marker-alt"></i> {{ site_settings.owner_location }}</div>
+        <div class="contact__socials">
+          {% if site_settings.github_url %}<a href="{{ site_settings.github_url }}" target="_blank" title="GitHub"><i class="fab fa-github"></i></a>{% endif %}
+          {% if site_settings.linkedin_url %}<a href="{{ site_settings.linkedin_url }}" target="_blank" title="LinkedIn"><i class="fab fa-linkedin"></i></a>{% endif %}
+          {% if site_settings.instagram_url %}<a href="{{ site_settings.instagram_url }}" target="_blank" title="Instagram"><i class="fab fa-instagram"></i></a>{% endif %}
+          {% if site_settings.tiktok_url %}<a href="{{ site_settings.tiktok_url }}" target="_blank" title="TikTok"><i class="fab fa-tiktok"></i></a>{% endif %}
+          {% if site_settings.upwork_url %}<a href="{{ site_settings.upwork_url }}" target="_blank" title="Upwork"><i class="fas fa-briefcase"></i></a>{% endif %}
+          {% if site_settings.lynk_url %}<a href="{{ site_settings.lynk_url }}" target="_blank" title="Lynk.id"><i class="fas fa-link"></i></a>{% endif %}
+        </div>
+      </div>
+      <form class="contact__form" action="{{ url_for('contact') }}" method="POST">
+        <div class="form__row">
+          <div class="form__group">
+            <label class="form__label">Name *</label>
+            <input type="text" name="name" class="form__input" required placeholder="Full Name"/>
+          </div>
+          <div class="form__group">
+            <label class="form__label">Email *</label>
+            <input type="email" name="email" class="form__input" required placeholder="your@email.com"/>
+          </div>
+        </div>
+        <div class="form__group">
+          <label class="form__label">Subject *</label>
+          <input type="text" name="subject" class="form__input" required placeholder="Project Inquiry"/>
+        </div>
+        <div class="form__group">
+          <label class="form__label">Message *</label>
+          <textarea name="message" class="form__input form__textarea" required placeholder="Describe your project or request..." rows="5"></textarea>
+        </div>
+        <button type="submit" class="btn btn--primary btn--full">
+          <i class="fas fa-paper-plane"></i> Send Message
+        </button>
+      </form>
+    </div>
+  </div>
+</section>
+
+<!-- ── Footer ───────────────────────────────── -->
+<footer class="footer">
+  <div class="container footer__inner">
+    <span class="footer__copy">© {{ now.year }} {{ site_settings.owner_name }}. All rights reserved.</span>
+    <div class="footer__socials">
+      {% if site_settings.github_url %}<a href="{{ site_settings.github_url }}" target="_blank" title="GitHub"><i class="fab fa-github"></i></a>{% endif %}
+      {% if site_settings.linkedin_url %}<a href="{{ site_settings.linkedin_url }}" target="_blank" title="LinkedIn"><i class="fab fa-linkedin"></i></a>{% endif %}
+      {% if site_settings.instagram_url %}<a href="{{ site_settings.instagram_url }}" target="_blank" title="Instagram"><i class="fab fa-instagram"></i></a>{% endif %}
+      {% if site_settings.tiktok_url %}<a href="{{ site_settings.tiktok_url }}" target="_blank" title="TikTok"><i class="fab fa-tiktok"></i></a>{% endif %}
+      {% if site_settings.upwork_url %}<a href="{{ site_settings.upwork_url }}" target="_blank" title="Upwork"><i class="fas fa-briefcase"></i></a>{% endif %}
+      {% if site_settings.lynk_url %}<a href="{{ site_settings.lynk_url }}" target="_blank" title="Lynk.id"><i class="fas fa-link"></i></a>{% endif %}
+    </div>
+    <span class="footer__stack">Built with <i class="fas fa-heart"></i> Python + Flask</span>
+  </div>
+</footer>
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Animate stat counters
+document.querySelectorAll('.hero__stat-num').forEach(el => {
+  const target = parseInt(el.dataset.count);
+  let count = 0;
+  const step = Math.ceil(target / 60);
+  const timer = setInterval(() => {
+    count = Math.min(count + step, target);
+    el.textContent = count.toLocaleString();
+    if (count >= target) clearInterval(timer);
+  }, 30);
+});
+
+// Animate skill bars on scroll
+const observer = new IntersectionObserver((entries) => {
+  entries.forEach(e => {
+    if (e.isIntersecting) {
+      e.target.querySelectorAll('.skill-card__fill').forEach(bar => {
+        bar.style.width = bar.dataset.width;
+      });
+    }
+  });
+}, { threshold: 0.1 });
+const skillsGrid = document.getElementById('skillsGrid');
+if (skillsGrid) observer.observe(skillsGrid);
+
+// Skills filter tabs
+document.querySelectorAll('.skills__tab').forEach(tab => {
+  tab.addEventListener('click', () => {
+    document.querySelectorAll('.skills__tab').forEach(t => t.classList.remove('skills__tab--active'));
+    tab.classList.add('skills__tab--active');
+    const filter = tab.dataset.filter;
+    document.querySelectorAll('.skill-card').forEach(card => {
+      card.style.display = (filter === 'all' || card.dataset.category === filter) ? 'flex' : 'none';
+    });
+  });
+});
+</script>
+{% endblock %}

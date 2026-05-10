@@ -1,0 +1,94 @@
+{% extends "base.html" %}
+{% block title %}Settings — Admin{% endblock %}
+{% block body_class %}admin-page{% endblock %}
+
+{% block layout %}
+{% include "partials/admin_sidebar.html" %}
+<div class="admin__main">
+  {% include "partials/admin_topbar.html" %}
+  <div class="admin__content">
+
+    <div class="page-header">
+      <h1 class="page-header__title">Site Settings</h1>
+      <p class="page-header__sub">Configure your portfolio appearance and information</p>
+    </div>
+
+    <form method="POST" enctype="multipart/form-data" class="form--admin">
+      <div class="dash__row">
+
+        <!-- Personal Info -->
+        <div class="dash__card">
+          <div class="dash__card-header"><h3><i class="fas fa-user"></i> Personal Information</h3></div>
+
+          <div class="form__group">
+            <label class="form__label">Profile Photo</label>
+            {% if site_settings.owner_avatar %}
+            <img src="{{ url_for('static', filename=site_settings.owner_avatar) }}"
+                 alt="Avatar" style="width:80px;height:80px;border-radius:50%;object-fit:cover;margin-bottom:.5rem;display:block"/>
+            {% endif %}
+            <input type="file" name="avatar" class="form__input" accept="image/*"/>
+          </div>
+
+          {% for key, label in [
+            ('owner_name','Full Name'),
+            ('owner_title','Professional Title'),
+            ('owner_email','Email Address'),
+            ('owner_phone','Phone Number'),
+            ('owner_location','Location'),
+          ] %}
+          <div class="form__group">
+            <label class="form__label">{{ label }}</label>
+            <input type="text" name="{{ key }}" class="form__input"
+                   value="{{ site_settings.get(key, '') }}"/>
+          </div>
+          {% endfor %}
+        </div>
+
+        <!-- Site Info -->
+        <div class="dash__card">
+          <div class="dash__card-header"><h3><i class="fas fa-globe"></i> Site Information</h3></div>
+
+          {% for key, label, type_ in [
+            ('site_name','Site Name','text'),
+            ('site_tagline','Tagline','text'),
+            ('meta_description','Meta Description','text'),
+            ('github_url','GitHub URL','url'),
+            ('linkedin_url','LinkedIn URL','url'),
+            ('instagram_url','Instagram URL','url'),
+            ('tiktok_url','TikTok URL','url'),
+            ('upwork_url','Upwork URL','url'),
+            ('lynk_url','Lynk.id URL','url'),
+            ('twitter_url','Twitter / X URL','url'),
+          ] %}
+          <div class="form__group">
+            <label class="form__label">{{ label }}</label>
+            <input type="{{ type_ }}" name="{{ key }}" class="form__input"
+                   value="{{ site_settings.get(key, '') }}"/>
+          </div>
+          {% endfor %}
+
+          <div class="form__row">
+            <div class="form__group">
+              <label class="form__label">Primary Color</label>
+              <input type="color" name="primary_color" class="form__input form__input--color"
+                     value="{{ site_settings.get('primary_color', '#0a0a0f') }}"/>
+            </div>
+            <div class="form__group">
+              <label class="form__label">Accent Color</label>
+              <input type="color" name="accent_color" class="form__input form__input--color"
+                     value="{{ site_settings.get('accent_color', '#6c63ff') }}"/>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="form__actions">
+        <button type="submit" class="btn btn--primary">
+          <i class="fas fa-save"></i> Save Settings
+        </button>
+      </div>
+    </form>
+
+  </div>
+</div>
+{% endblock %}

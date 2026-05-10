@@ -1,0 +1,77 @@
+{% extends "base.html" %}
+{% block title %}Contact{% endblock %}
+{% block body_class %}public-page{% endblock %}
+
+{% block layout %}
+<nav class="nav" id="mainNav">
+  <div class="nav__inner">
+    <a href="{{ url_for('index') }}" class="nav__logo">
+      <span class="nav__logo-dot"></span>
+      <span>{{ site_settings.owner_name.split()[0] | upper }}</span>
+    </a>
+    <ul class="nav__links">
+      <li><a href="{{ url_for('index') }}" class="nav__link">Home</a></li>
+      <li><a href="{{ url_for('projects') }}" class="nav__link">Projects</a></li>
+      <li><a href="{{ url_for('contact') }}" class="nav__link nav__link--active">Contact</a></li>
+    </ul>
+    <div class="nav__actions">
+      <a href="{{ url_for('auth_login') }}" class="btn btn--ghost btn--sm"><i class="fas fa-lock"></i> Admin</a>
+    </div>
+  </div>
+</nav>
+
+<section class="section" style="min-height:100vh;padding-top:7rem">
+  <div class="container" style="max-width:900px">
+    <div class="section__header">
+      <span class="section__label">Get In Touch</span>
+      <h1 class="section__title">Contact Me</h1>
+    </div>
+
+    <div class="contact__grid">
+      <div class="contact__info">
+        <p class="contact__intro">Ready to collaborate? I'm currently open to new opportunities.</p>
+        <div class="contact__detail"><i class="fas fa-envelope"></i> {{ site_settings.owner_email }}</div>
+        <div class="contact__detail"><i class="fas fa-phone"></i> {{ site_settings.owner_phone }}</div>
+        <div class="contact__detail"><i class="fas fa-map-marker-alt"></i> {{ site_settings.owner_location }}</div>
+        <div class="contact__socials">
+          {% if site_settings.github_url %}<a href="{{ site_settings.github_url }}" target="_blank" title="GitHub"><i class="fab fa-github"></i></a>{% endif %}
+          {% if site_settings.linkedin_url %}<a href="{{ site_settings.linkedin_url }}" target="_blank" title="LinkedIn"><i class="fab fa-linkedin"></i></a>{% endif %}
+          {% if site_settings.instagram_url %}<a href="{{ site_settings.instagram_url }}" target="_blank" title="Instagram"><i class="fab fa-instagram"></i></a>{% endif %}
+          {% if site_settings.tiktok_url %}<a href="{{ site_settings.tiktok_url }}" target="_blank" title="TikTok"><i class="fab fa-tiktok"></i></a>{% endif %}
+          {% if site_settings.upwork_url %}<a href="{{ site_settings.upwork_url }}" target="_blank" title="Upwork"><i class="fas fa-briefcase"></i></a>{% endif %}
+          {% if site_settings.lynk_url %}<a href="{{ site_settings.lynk_url }}" target="_blank" title="Lynk.id"><i class="fas fa-link"></i></a>{% endif %}
+        </div>
+      </div>
+      <form class="contact__form" action="{{ url_for('contact') }}" method="POST">
+        <div class="form__row">
+          <div class="form__group">
+            <label class="form__label">Name *</label>
+            <input type="text" name="name" class="form__input" required/>
+          </div>
+          <div class="form__group">
+            <label class="form__label">Email *</label>
+            <input type="email" name="email" class="form__input" required/>
+          </div>
+        </div>
+        <div class="form__group">
+          <label class="form__label">Subject *</label>
+          <input type="text" name="subject" class="form__input" required/>
+        </div>
+        <div class="form__group">
+          <label class="form__label">Message *</label>
+          <textarea name="message" class="form__input form__textarea" required rows="6"></textarea>
+        </div>
+        <button type="submit" class="btn btn--primary btn--full">
+          <i class="fas fa-paper-plane"></i> Send Message
+        </button>
+      </form>
+    </div>
+  </div>
+</section>
+
+<footer class="footer">
+  <div class="container footer__inner">
+    <span class="footer__copy">© {{ now.year }} {{ site_settings.owner_name }}</span>
+  </div>
+</footer>
+{% endblock %}

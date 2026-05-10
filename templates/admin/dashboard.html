@@ -1,0 +1,178 @@
+{% extends "base.html" %}
+{% block title %}Dashboard — Admin{% endblock %}
+{% block body_class %}admin-page{% endblock %}
+
+{% block layout %}
+{% include "partials/admin_sidebar.html" %}
+
+<div class="admin__main">
+  {% include "partials/admin_topbar.html" %}
+
+  <div class="admin__content">
+    <div class="page-header">
+      <div>
+        <h1 class="page-header__title">Dashboard</h1>
+        <p class="page-header__sub">Welcome back, <strong>{{ current_user.full_name }}</strong></p>
+      </div>
+      <div class="page-header__actions">
+        <a href="{{ url_for('index') }}" class="btn btn--ghost btn--sm" target="_blank">
+          <i class="fas fa-external-link-alt"></i> View Site
+        </a>
+      </div>
+    </div>
+
+    <!-- ── KPI Cards ─────────────────────── -->
+    <div class="kpi-grid">
+      <div class="kpi-card kpi-card--blue">
+        <div class="kpi-card__icon"><i class="fas fa-folder-open"></i></div>
+        <div class="kpi-card__body">
+          <span class="kpi-card__num">{{ stats.total_projects }}</span>
+          <span class="kpi-card__label">Total Projects</span>
+        </div>
+        <a href="{{ url_for('admin_projects') }}" class="kpi-card__link">Manage <i class="fas fa-arrow-right"></i></a>
+      </div>
+      <div class="kpi-card kpi-card--purple">
+        <div class="kpi-card__icon"><i class="fas fa-code"></i></div>
+        <div class="kpi-card__body">
+          <span class="kpi-card__num">{{ stats.total_skills }}</span>
+          <span class="kpi-card__label">Skills Listed</span>
+        </div>
+        <a href="{{ url_for('admin_skills') }}" class="kpi-card__link">Manage <i class="fas fa-arrow-right"></i></a>
+      </div>
+      <div class="kpi-card kpi-card--green">
+        <div class="kpi-card__icon"><i class="fas fa-envelope"></i></div>
+        <div class="kpi-card__body">
+          <span class="kpi-card__num">{{ stats.total_messages }}</span>
+          <span class="kpi-card__label">Messages
+            {% if stats.unread_messages > 0 %}
+            <span class="badge badge--danger">{{ stats.unread_messages }} unread</span>
+            {% endif %}
+          </span>
+        </div>
+        <a href="{{ url_for('admin_messages') }}" class="kpi-card__link">View <i class="fas fa-arrow-right"></i></a>
+      </div>
+      <div class="kpi-card kpi-card--orange">
+        <div class="kpi-card__icon"><i class="fas fa-eye"></i></div>
+        <div class="kpi-card__body">
+          <span class="kpi-card__num">{{ stats.visitor_stats.total }}</span>
+          <span class="kpi-card__label">Total Visitors</span>
+        </div>
+        <span class="kpi-card__sub">{{ stats.visitor_stats.today }} today · {{ stats.visitor_stats.this_week }} this week</span>
+      </div>
+    </div>
+
+    <!-- ── Analytics Chart ───────────────── -->
+    <div class="dash__row">
+      <div class="dash__card dash__card--wide">
+        <div class="dash__card-header">
+          <h3>Visitor Traffic (7 Days)</h3>
+        </div>
+        <canvas id="trafficChart" height="80"></canvas>
+      </div>
+
+      <!-- Top Pages -->
+      <div class="dash__card">
+        <div class="dash__card-header"><h3>Top Pages</h3></div>
+        <table class="table table--compact">
+          <thead><tr><th>Page</th><th>Visits</th></tr></thead>
+          <tbody>
+            {% for page in stats.visitor_stats.top_pages %}
+            <tr>
+              <td>{{ page.path }}</td>
+              <td><span class="badge badge--outline">{{ page.visits }}</span></td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- ── Recent Activity ───────────────── -->
+    <div class="dash__row">
+      <div class="dash__card dash__card--wide">
+        <div class="dash__card-header">
+          <h3>Recent Audit Logs</h3>
+          <a href="{{ url_for('admin_audit_logs') }}" class="btn btn--ghost btn--xs">View All</a>
+        </div>
+        <table class="table">
+          <thead>
+            <tr><th>Time</th><th>User</th><th>Action</th><th>Detail</th><th>IP</th></tr>
+          </thead>
+          <tbody>
+            {% for log in recent_logs %}
+            <tr>
+              <td class="mono text--muted">{{ log.created_at[:16] }}</td>
+              <td>{{ log.full_name or '—' }}</td>
+              <td><span class="badge badge--outline">{{ log.action }}</span></td>
+              <td class="text--muted">{{ log.detail | truncate(60) }}</td>
+              <td class="mono text--muted">{{ log.ip_address }}</td>
+            </tr>
+            {% else %}
+            <tr><td colspan="5" class="text-center text--muted">No logs yet.</td></tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Recent Messages -->
+      <div class="dash__card">
+        <div class="dash__card-header">
+          <h3>Recent Messages</h3>
+          <a href="{{ url_for('admin_messages') }}" class="btn btn--ghost btn--xs">View All</a>
+        </div>
+        {% for msg in recent_messages %}
+        <div class="msg-preview {% if not msg.is_read %}msg-preview--unread{% endif %}">
+          <div class="msg-preview__top">
+            <strong>{{ msg.name }}</strong>
+            <span class="text--muted mono">{{ msg.created_at[:10] }}</span>
+          </div>
+          <p class="msg-preview__sub">{{ msg.subject }}</p>
+          <p class="msg-preview__body">{{ msg.message | truncate(80) }}</p>
+        </div>
+        {% else %}
+        <p class="text--muted text-center p-4">No messages yet.</p>
+        {% endfor %}
+      </div>
+    </div>
+
+  </div><!-- /admin__content -->
+</div><!-- /admin__main -->
+
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<script>
+const daily = {{ stats.visitor_stats.daily_7d | tojson }};
+const labels = daily.map(d => d.day);
+const visits = daily.map(d => d.visits);
+
+const ctx = document.getElementById('trafficChart');
+if (ctx) {
+  new Chart(ctx, {
+    type: 'line',
+    data: {
+      labels,
+      datasets: [{
+        label: 'Visitors',
+        data: visits,
+        borderColor: '#6c63ff',
+        backgroundColor: 'rgba(108,99,255,0.12)',
+        tension: 0.4,
+        fill: true,
+        pointBackgroundColor: '#6c63ff',
+        pointRadius: 4,
+      }]
+    },
+    options: {
+      responsive: true,
+      plugins: { legend: { display: false } },
+      scales: {
+        x: { grid: { color: 'rgba(255,255,255,0.05)' }, ticks: { color: '#888' } },
+        y: { grid: { color: 'rgba(255,255,255,0.05)' }, ticks: { color: '#888' } }
+      }
+    }
+  });
+}
+</script>
+{% endblock %}

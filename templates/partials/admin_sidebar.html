@@ -1,0 +1,69 @@
+<aside class="admin__sidebar" id="adminSidebar">
+  <div class="sidebar__logo">
+    <span class="sidebar__logo-dot"></span>
+    <span>ADMIN</span>
+  </div>
+
+  <nav class="sidebar__nav">
+    <div class="sidebar__section-label">Overview</div>
+    <a href="{{ url_for('admin_dashboard') }}" class="sidebar__link {% if request.endpoint == 'admin_dashboard' %}sidebar__link--active{% endif %}">
+      <i class="fas fa-th-large"></i> Dashboard
+    </a>
+
+    <div class="sidebar__section-label">Content</div>
+    <a href="{{ url_for('admin_projects') }}" class="sidebar__link {% if 'project' in request.endpoint %}sidebar__link--active{% endif %}">
+      <i class="fas fa-folder-open"></i> Projects
+    </a>
+    <a href="{{ url_for('admin_skills') }}" class="sidebar__link {% if request.endpoint == 'admin_skills' %}sidebar__link--active{% endif %}">
+      <i class="fas fa-code"></i> Skills
+    </a>
+    <a href="{{ url_for('admin_experience') }}" class="sidebar__link {% if request.endpoint == 'admin_experience' %}sidebar__link--active{% endif %}">
+      <i class="fas fa-briefcase"></i> Experience
+    </a>
+    <a href="{{ url_for('admin_education') }}" class="sidebar__link {% if request.endpoint == 'admin_education' %}sidebar__link--active{% endif %}">
+      <i class="fas fa-graduation-cap"></i> Education
+    </a>
+    <a href="{{ url_for('admin_certificates') }}" class="sidebar__link {% if request.endpoint == 'admin_certificates' %}sidebar__link--active{% endif %}">
+      <i class="fas fa-certificate"></i> Certificates
+    </a>
+
+    <div class="sidebar__section-label">Communication</div>
+    <a href="{{ url_for('admin_messages') }}" class="sidebar__link {% if request.endpoint == 'admin_messages' %}sidebar__link--active{% endif %}">
+      <i class="fas fa-envelope"></i> Messages
+      {% if unread_messages > 0 %}
+      <span class="sidebar__badge">{{ unread_messages }}</span>
+      {% endif %}
+    </a>
+
+    <div class="sidebar__section-label">System</div>
+    {% if session.role == 'admin' %}
+    <a href="{{ url_for('admin_users') }}" class="sidebar__link {% if 'user' in request.endpoint %}sidebar__link--active{% endif %}">
+      <i class="fas fa-users"></i> Users & Roles
+    </a>
+    {% endif %}
+    {% if session.role in ['admin','manager'] %}
+    <a href="{{ url_for('admin_audit_logs') }}" class="sidebar__link {% if request.endpoint == 'admin_audit_logs' %}sidebar__link--active{% endif %}">
+      <i class="fas fa-shield-alt"></i> Audit Logs
+    </a>
+    {% endif %}
+    {% if session.role == 'admin' %}
+    <a href="{{ url_for('admin_settings') }}" class="sidebar__link {% if request.endpoint == 'admin_settings' %}sidebar__link--active{% endif %}">
+      <i class="fas fa-cog"></i> Settings
+    </a>
+    {% endif %}
+  </nav>
+
+  <div class="sidebar__footer">
+    <div class="sidebar__user">
+      <div class="sidebar__user-avatar">{{ session.name[0] | upper }}</div>
+      <div>
+        <div class="sidebar__user-name">{{ session.name }}</div>
+        <div class="sidebar__user-role">{{ session.role | title }}</div>
+      </div>
+    </div>
+    <a href="{{ url_for('auth_logout') }}" class="sidebar__logout" title="Logout">
+      <i class="fas fa-sign-out-alt"></i>
+    </a>
+  </div>
+</aside>
+<div class="admin__overlay" id="adminOverlay"></div>

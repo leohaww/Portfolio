@@ -1,0 +1,86 @@
+{% extends "base.html" %}
+{% block title %}Experience — Admin{% endblock %}
+{% block body_class %}admin-page{% endblock %}
+
+{% block layout %}
+{% include "partials/admin_sidebar.html" %}
+<div class="admin__main">
+  {% include "partials/admin_topbar.html" %}
+  <div class="admin__content">
+
+    <div class="page-header">
+      <h1 class="page-header__title">Work Experience</h1>
+    </div>
+
+    <div class="dash__row">
+      <div class="dash__card" style="flex:0 0 340px">
+        <div class="dash__card-header"><h3>Add Experience</h3></div>
+        <form method="POST" action="{{ url_for('admin_create_experience') }}" class="form--admin">
+          <div class="form__group">
+            <label class="form__label">Company *</label>
+            <input type="text" name="company" class="form__input" required/>
+          </div>
+          <div class="form__group">
+            <label class="form__label">Role / Position *</label>
+            <input type="text" name="role" class="form__input" required/>
+          </div>
+          <div class="form__group">
+            <label class="form__label">Location</label>
+            <input type="text" name="location" class="form__input" placeholder="Surabaya, Indonesia"/>
+          </div>
+          <div class="form__row">
+            <div class="form__group">
+              <label class="form__label">Start Date</label>
+              <input type="text" name="start_date" class="form__input" placeholder="Jan 2022"/>
+            </div>
+            <div class="form__group">
+              <label class="form__label">End Date</label>
+              <input type="text" name="end_date" class="form__input" placeholder="Dec 2023"/>
+            </div>
+          </div>
+          <div class="form__group">
+            <label class="form__checkbox-label">
+              <input type="checkbox" name="is_current" value="1"/>
+              <span>Currently working here</span>
+            </label>
+          </div>
+          <div class="form__group">
+            <label class="form__label">Description</label>
+            <textarea name="description" class="form__input form__textarea" rows="3"
+                      placeholder="Key responsibilities and achievements..."></textarea>
+          </div>
+          <button type="submit" class="btn btn--primary btn--full">
+            <i class="fas fa-plus"></i> Add Experience
+          </button>
+        </form>
+      </div>
+
+      <div class="dash__card dash__card--wide">
+        <div class="dash__card-header"><h3>All Experiences ({{ experiences|length }})</h3></div>
+        {% for exp in experiences %}
+        <div class="exp-item">
+          <div class="exp-item__header">
+            <div>
+              <strong>{{ exp.role }}</strong> at <span class="text--accent">{{ exp.company }}</span>
+              {% if exp.location %}<span class="text--muted"> · {{ exp.location }}</span>{% endif %}
+            </div>
+            <div class="exp-item__right">
+              <span class="text--muted mono">{{ exp.start_date }} — {{ 'Present' if exp.is_current else exp.end_date }}</span>
+              {% if exp.is_current %}<span class="badge badge--green">Current</span>{% endif %}
+              <form action="{{ url_for('admin_delete_experience', eid=exp.id) }}" method="POST"
+                    onsubmit="return confirm('Hapus?')" style="display:inline">
+                <button class="btn btn--danger btn--xs"><i class="fas fa-trash"></i></button>
+              </form>
+            </div>
+          </div>
+          {% if exp.description %}<p class="exp-item__desc">{{ exp.description }}</p>{% endif %}
+        </div>
+        {% else %}
+        <p class="text--muted text-center p-4">Belum ada data pengalaman.</p>
+        {% endfor %}
+      </div>
+    </div>
+
+  </div>
+</div>
+{% endblock %}
