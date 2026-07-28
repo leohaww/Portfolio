@@ -1,0 +1,73 @@
+{% extends "base.html" %}
+{% block title %}Services{% endblock %}
+{% block body_class %}public-page{% endblock %}
+
+{% block layout %}
+<nav class="nav" id="mainNav">
+  <div class="nav__inner">
+    <a href="{{ url_for('index') }}" class="nav__logo">
+      <span class="nav__logo-dot"></span>
+      <span>{{ site_settings.owner_name.split()[0] | upper }}</span>
+    </a>
+    <ul class="nav__links">
+      <li><a href="{{ url_for('index') }}" class="nav__link">Home</a></li>
+      <li><a href="{{ url_for('services') }}" class="nav__link nav__link--active">Services</a></li>
+      <li><a href="{{ url_for('contact') }}" class="nav__link">Contact</a></li>
+    </ul>
+    <div class="nav__actions">
+      <a href="{{ url_for('auth_login') }}" class="btn btn--ghost btn--sm"><i class="fas fa-lock"></i> Admin</a>
+    </div>
+  </div>
+</nav>
+
+<section class="section" style="padding-top:7rem">
+  <div class="container">
+    <div class="section__header" style="text-align:center;display:block">
+      <span class="section__label" style="text-align:center">Services & Pricing</span>
+      <h1 class="section__title">What I Can Do For You</h1>
+      <p style="color:var(--text-2);max-width:540px;margin:.75rem auto 0;font-size:1rem;">
+        Solusi digital profesional untuk bisnis Anda — dari web development hingga konsultasi IT.
+      </p>
+    </div>
+    <div class="services__grid">
+      {% for svc in services %}
+      <div class="svc-card reveal {% if svc.is_popular %}svc-card--popular{% endif %}">
+        {% if svc.is_popular %}
+        <div class="svc-card__popular-badge"><i class="fas fa-bolt"></i> Most Popular</div>
+        {% endif %}
+        <div class="svc-card__icon-wrap"><i class="{{ svc.icon or 'fas fa-code' }}"></i></div>
+        <h3 class="svc-card__title">{{ svc.title }}</h3>
+        {% if svc.subtitle %}<p class="svc-card__subtitle">{{ svc.subtitle }}</p>{% endif %}
+        <div class="svc-card__price">
+          <span class="svc-card__price-from">
+            {% if svc.price_from %}<span class="svc-card__currency">Rp</span><span class="svc-card__amount">{{ svc.price_from }}</span>
+            {% else %}<span class="svc-card__amount">Hubungi Kami</span>{% endif %}
+          </span>
+          {% if svc.price_to %}<span class="svc-card__price-sep">–</span><span class="svc-card__price-to">{{ svc.price_to }}</span>{% endif %}
+          {% if svc.price_unit and svc.price_from %}<span class="svc-card__price-unit">/ {{ svc.price_unit }}</span>{% endif %}
+        </div>
+        {% if svc.description %}<p class="svc-card__desc">{{ svc.description }}</p>{% endif %}
+        {% if svc.features %}
+        <ul class="svc-card__features">
+          {% for feat in svc.features.split('\n') %}{% if feat.strip() %}
+          <li><i class="fas fa-check-circle"></i> {{ feat.strip() }}</li>
+          {% endif %}{% endfor %}
+        </ul>
+        {% endif %}
+        <a href="{{ url_for('contact') }}" class="btn {% if svc.is_popular %}btn--primary{% else %}btn--outline{% endif %} btn--full svc-card__cta">
+          <i class="fas fa-paper-plane"></i> Get Started
+        </a>
+      </div>
+      {% else %}
+      <p class="empty-state">Belum ada service yang ditambahkan.</p>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+<footer class="footer">
+  <div class="container footer__inner">
+    <span class="footer__copy">© {{ now.year }} {{ site_settings.owner_name }}</span>
+    <a href="{{ url_for('index') }}" class="btn btn--ghost btn--sm"><i class="fas fa-home"></i> Home</a>
+  </div>
+</footer>
+{% endblock %}

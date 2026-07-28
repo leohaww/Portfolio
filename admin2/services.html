@@ -1,0 +1,111 @@
+{% extends "base.html" %}
+{% block title %}Services — Admin{% endblock %}
+{% block body_class %}admin-page{% endblock %}
+{% block layout %}
+{% include "partials/admin_sidebar.html" %}
+<div class="admin__main">
+  {% include "partials/admin_topbar.html" %}
+  <div class="admin__content">
+    <div class="page-header">
+      <div><h1 class="page-header__title">Services</h1><p class="page-header__sub">Kelola paket layanan & pricing</p></div>
+      <a href="{{ url_for('services') }}" class="btn btn--ghost btn--sm" target="_blank">
+        <i class="fas fa-external-link-alt"></i> View Page
+      </a>
+    </div>
+    <div class="dash__row">
+      <!-- Add Form -->
+      <div class="dash__card" style="flex:0 0 340px">
+        <div class="dash__card-header"><h3>Add Service</h3></div>
+        <form method="POST" action="{{ url_for('admin_create_service') }}" class="form--admin" style="padding:1.25rem">
+          <div class="form__group">
+            <label class="form__label">Title *</label>
+            <input type="text" name="title" class="form__input" required placeholder="Web Development"/>
+          </div>
+          <div class="form__group">
+            <label class="form__label">Subtitle</label>
+            <input type="text" name="subtitle" class="form__input" placeholder="Full-Stack Web App"/>
+          </div>
+          <div class="form__group">
+            <label class="form__label">Icon (Font Awesome class)</label>
+            <input type="text" name="icon" class="form__input" placeholder="fas fa-laptop-code"/>
+          </div>
+          <div class="form__group">
+            <label class="form__label">Description</label>
+            <textarea name="description" class="form__input form__textarea" rows="2"
+                      placeholder="Deskripsi singkat layanan..."></textarea>
+          </div>
+          <div class="form__row">
+            <div class="form__group">
+              <label class="form__label">Price From (Rp)</label>
+              <input type="text" name="price_from" class="form__input" placeholder="5.000.000"/>
+            </div>
+            <div class="form__group">
+              <label class="form__label">Price To (Rp)</label>
+              <input type="text" name="price_to" class="form__input" placeholder="15.000.000"/>
+            </div>
+          </div>
+          <div class="form__group">
+            <label class="form__label">Price Unit</label>
+            <select name="price_unit" class="form__input form__select">
+              {% for u in ['project','bulan','jam','halaman'] %}
+              <option value="{{ u }}">{{ u }}</option>
+              {% endfor %}
+            </select>
+          </div>
+          <div class="form__group">
+            <label class="form__label">Features (satu per baris)</label>
+            <textarea name="features" class="form__input form__textarea" rows="5"
+                      placeholder="Custom UI/UX Design&#10;REST API Integration&#10;Database Design&#10;Deployment & CI/CD&#10;3 Bulan Free Support"></textarea>
+          </div>
+          <div class="form__group">
+            <label class="form__checkbox-label">
+              <input type="checkbox" name="is_popular" value="1"/>
+              <span>Mark as Most Popular</span>
+            </label>
+          </div>
+          <button type="submit" class="btn btn--primary btn--full">
+            <i class="fas fa-plus"></i> Add Service
+          </button>
+        </form>
+      </div>
+
+      <!-- List -->
+      <div class="dash__card dash__card--wide">
+        <div class="dash__card-header"><h3>All Services ({{ services|length }})</h3></div>
+        <table class="table">
+          <thead><tr><th>Icon</th><th>Title</th><th>Price</th><th>Unit</th><th>Popular</th><th>Actions</th></tr></thead>
+          <tbody>
+            {% for svc in services %}
+            <tr>
+              <td><i class="{{ svc.icon or 'fas fa-code' }}" style="font-size:1.3rem;color:var(--violet-2)"></i></td>
+              <td>
+                <strong>{{ svc.title }}</strong>
+                {% if svc.subtitle %}<br><span class="text--muted" style="font-size:.8rem">{{ svc.subtitle }}</span>{% endif %}
+              </td>
+              <td class="mono">
+                {% if svc.price_from %}Rp {{ svc.price_from }}{% if svc.price_to %} – {{ svc.price_to }}{% endif %}
+                {% else %}<span class="text--muted">Hubungi Kami</span>{% endif %}
+              </td>
+              <td class="mono text--muted">{{ svc.price_unit }}</td>
+              <td>
+                {% if svc.is_popular %}
+                <span class="badge badge--accent"><i class="fas fa-bolt"></i> Popular</span>
+                {% else %}<span class="text--muted">—</span>{% endif %}
+              </td>
+              <td>
+                <form action="{{ url_for('admin_delete_service', sid=svc.id) }}" method="POST"
+                      onsubmit="return confirm('Hapus service ini?')" style="display:inline">
+                  <button class="btn btn--danger btn--xs"><i class="fas fa-trash"></i></button>
+                </form>
+              </td>
+            </tr>
+            {% else %}
+            <tr><td colspan="6" class="text-center text--muted p-4">Belum ada service.</td></tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

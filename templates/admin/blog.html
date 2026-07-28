@@ -1,0 +1,59 @@
+{% extends "base.html" %}
+{% block title %}Blog — Admin{% endblock %}
+{% block body_class %}admin-page{% endblock %}
+{% block layout %}
+{% include "partials/admin_sidebar.html" %}
+<div class="admin__main">
+  {% include "partials/admin_topbar.html" %}
+  <div class="admin__content">
+    <div class="page-header">
+      <div><h1 class="page-header__title">Blog Posts</h1><p class="page-header__sub">Kelola artikel dan publikasi</p></div>
+      <a href="{{ url_for('admin_create_blog') }}" class="btn btn--primary"><i class="fas fa-plus"></i> New Article</a>
+    </div>
+    <div class="dash__card">
+      <div class="dash__card-header">
+        <h3>All Posts ({{ posts|length }})</h3>
+        <input type="text" id="tableSearch" class="form__input form__input--sm" placeholder="Search..."/>
+      </div>
+      <table class="table" id="blogTable">
+        <thead><tr><th>Title</th><th>Category</th><th>Status</th><th>Views</th><th>Read Time</th><th>Date</th><th>Actions</th></tr></thead>
+        <tbody>
+          {% for post in posts %}
+          <tr>
+            <td><strong>{{ post.title | truncate(50) }}</strong></td>
+            <td><span class="badge badge--outline">{{ post.category }}</span></td>
+            <td>
+              <span class="badge {% if post.status == 'published' %}badge--green{% elif post.status == 'draft' %}badge--orange{% else %}badge--outline{% endif %}">
+                {{ post.status | title }}
+              </span>
+            </td>
+            <td class="mono text--muted">{{ post.views }}</td>
+            <td class="mono text--muted">{{ post.read_time }} min</td>
+            <td class="mono text--muted">{{ post.created_at[:10] }}</td>
+            <td class="table__actions">
+              <a href="{{ url_for('admin_edit_blog', pid=post.id) }}" class="btn btn--ghost btn--xs"><i class="fas fa-edit"></i></a>
+              {% if post.status == 'published' %}
+              <a href="{{ url_for('blog_post', slug=post.slug) }}" target="_blank" class="btn btn--ghost btn--xs"><i class="fas fa-eye"></i></a>
+              {% endif %}
+              {% if session.role == 'admin' %}
+              <form action="{{ url_for('admin_delete_blog', pid=post.id) }}" method="POST" onsubmit="return confirm('Hapus artikel ini?')" style="display:inline">
+                <button class="btn btn--danger btn--xs"><i class="fas fa-trash"></i></button>
+              </form>
+              {% endif %}
+            </td>
+          </tr>
+          {% else %}
+          <tr><td colspan="7" class="text-center text--muted p-4">Belum ada artikel.</td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+<script>
+document.getElementById('tableSearch').addEventListener('input', function() {
+  const q = this.value.toLowerCase();
+  document.querySelectorAll('#blogTable tbody tr').forEach(r => r.style.display = r.textContent.toLowerCase().includes(q) ? '' : 'none');
+});
+</script>
+{% endblock %}

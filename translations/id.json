@@ -1,0 +1,79 @@
+{
+  "nav.about":        "Tentang",
+  "nav.skills":       "Keahlian",
+  "nav.projects":     "Proyek",
+  "nav.services":     "Layanan",
+  "nav.blog":         "Blog",
+  "nav.contact":      "Kontak",
+  "nav.admin":        "Admin",
+
+  "hero.available":   "Tersedia untuk peluang baru",
+  "hero.greeting":    "Halo, Saya",
+  "hero.cta.projects":"Lihat Proyek",
+  "hero.cta.contact": "Hubungi Saya",
+  "hero.cta.cv":      "Unduh CV",
+  "hero.stat.projects":"Proyek",
+  "hero.stat.exp":    "Thn Pengalaman",
+  "hero.stat.certs":  "Sertifikasi",
+  "hero.stat.visitors":"Pengunjung",
+
+  "about.title":      "Tentang Saya",
+  "about.label":      "01 / Tentang",
+  "about.available_for": "Tersedia untuk",
+  "about.tags.solver":"Pemecah Masalah",
+  "about.tags.team":  "Tim yang Solid",
+  "about.tags.agile": "Agile / Scrum",
+  "about.tags.oss":   "Kontributor Open Source",
+
+  "skills.title":     "Keahlian Teknis",
+  "skills.label":     "02 / Keahlian",
+  "skills.tab.all":   "Semua",
+
+  "experience.title": "Riwayat Kerja",
+  "experience.label": "03 / Pengalaman",
+  "experience.current":"Sekarang",
+
+  "projects.title":   "Proyek Unggulan",
+  "projects.label":   "04 / Proyek",
+  "projects.viewall": "Semua Proyek",
+  "projects.featured":"Unggulan",
+
+  "education.title":  "Pendidikan & Sertifikasi",
+  "education.label":  "05 / Pendidikan",
+
+  "services.title":   "Layanan Saya",
+  "services.label":   "06 / Layanan",
+  "services.viewall": "Semua Layanan",
+  "services.popular": "Paling Populer",
+  "services.cta":     "Mulai Sekarang",
+  "services.contact": "Hubungi Kami",
+
+  "testimonials.title":"Ulasan Klien",
+  "testimonials.label":"07 / Testimoni",
+
+  "blog.title":       "Artikel Terbaru",
+  "blog.label":       "08 / Blog",
+  "blog.viewall":     "Semua Artikel",
+  "blog.readmore":    "Baca Selengkapnya",
+  "blog.min_read":    "mnt baca",
+
+  "contact.title":    "Mari Bekerja Sama",
+  "contact.label":    "09 / Kontak",
+  "contact.intro":    "Punya proyek? Saya siap membantu.",
+  "contact.name":     "Nama",
+  "contact.email":    "Email",
+  "contact.subject":  "Subjek",
+  "contact.message":  "Pesan",
+  "contact.send":     "Kirim Pesan",
+  "contact.success":  "Pesan berhasil dikirim!",
+
+  "availability.available":  "Tersedia",
+  "availability.busy":       "Sedang Sibuk",
+  "availability.booked":     "Terbooking",
+
+  "footer.built":     "Dibuat dengan",
+  "footer.rights":    "Hak Cipta Dilindungi",
+
+  "lang.id":          "Indonesia",
+  "lang.en":          "English"
+}

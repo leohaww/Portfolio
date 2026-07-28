@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+{% block title %}Offline{% endblock %}
+{% block body_class %}error-page{% endblock %}
+
+{% block layout %}
+<div class="error__wrap" style="max-width:480px;margin:0 auto;">
+  <div style="font-size:5rem;margin-bottom:1rem;animation:neonPulse 2s ease-in-out infinite;">
+    <i class="fas fa-wifi" style="color:var(--text-3)"></i>
+  </div>
+  <div class="error__code" style="font-size:clamp(3rem,10vw,6rem);">Offline</div>
+  <h1 class="error__title">Tidak Ada Koneksi</h1>
+  <p class="error__sub">
+    Anda sedang offline. Beberapa konten mungkin masih tersedia dari cache.
+    Periksa koneksi internet Anda dan coba lagi.
+  </p>
+  <div style="display:flex;gap:1rem;justify-content:center;flex-wrap:wrap;margin-top:2rem;">
+    <button onclick="location.reload()" class="btn btn--primary">
+      <i class="fas fa-rotate-right"></i> Coba Lagi
+    </button>
+    <a href="/" class="btn btn--outline">
+      <i class="fas fa-home"></i> Beranda
+    </a>
+  </div>
+  <p style="margin-top:2rem;font-size:.8rem;color:var(--text-3);font-family:var(--font-mono);">
+    Portfolio ini mendukung PWA — Anda tetap bisa mengakses konten yang sudah di-cache.
+  </p>
+</div>
+{% endblock %}

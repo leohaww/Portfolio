@@ -1,0 +1,108 @@
+{% extends "base.html" %}
+{% block title %}{{ 'Edit' if action == 'edit' else 'Add' }} Project — Admin{% endblock %}
+{% block body_class %}admin-page{% endblock %}
+
+{% block layout %}
+{% include "partials/admin_sidebar.html" %}
+<div class="admin__main">
+  {% include "partials/admin_topbar.html" %}
+  <div class="admin__content">
+
+    <div class="page-header">
+      <div>
+        <h1 class="page-header__title">{{ 'Edit Project' if action == 'edit' else 'Add New Project' }}</h1>
+      </div>
+      <a href="{{ url_for('admin_projects') }}" class="btn btn--ghost btn--sm">
+        <i class="fas fa-arrow-left"></i> Back
+      </a>
+    </div>
+
+    <div class="dash__card">
+      <form method="POST" enctype="multipart/form-data" class="form--admin">
+        <div class="form__row">
+          <div class="form__group">
+            <label class="form__label">Project Title *</label>
+            <input type="text" name="title" class="form__input" required
+                   value="{{ project.title if project else '' }}" placeholder="My Awesome Project"/>
+          </div>
+          <div class="form__group">
+            <label class="form__label">Category</label>
+            <select name="category" class="form__input form__select">
+              {% for cat in ['Web App','Mobile App','API / Backend','DevOps','Machine Learning','Other'] %}
+              <option value="{{ cat }}" {% if project and project.category == cat %}selected{% endif %}>{{ cat }}</option>
+              {% endfor %}
+            </select>
+          </div>
+        </div>
+
+        <div class="form__group">
+          <label class="form__label">Short Description</label>
+          <input type="text" name="short_desc" class="form__input"
+                 value="{{ project.short_desc if project else '' }}" placeholder="One-liner summary (shown on cards)"/>
+        </div>
+
+        <div class="form__group">
+          <label class="form__label">Full Description</label>
+          <textarea name="description" class="form__input form__textarea" rows="6"
+                    placeholder="Detailed project description, goals, outcomes...">{{ project.description if project else '' }}</textarea>
+        </div>
+
+        <div class="form__row">
+          <div class="form__group">
+            <label class="form__label">Tech Stack (comma-separated)</label>
+            <input type="text" name="tech_stack" class="form__input"
+                   value="{{ project.tech_stack if project else '' }}" placeholder="Python, Flask, PostgreSQL, Docker"/>
+          </div>
+          <div class="form__group">
+            <label class="form__label">Status</label>
+            <select name="status" class="form__input form__select">
+              {% for s in ['active','draft','archived'] %}
+              <option value="{{ s }}" {% if project and project.status == s %}selected{% endif %}>{{ s | title }}</option>
+              {% endfor %}
+            </select>
+          </div>
+        </div>
+
+        <div class="form__row">
+          <div class="form__group">
+            <label class="form__label">Demo URL</label>
+            <input type="url" name="demo_url" class="form__input"
+                   value="{{ project.demo_url if project else '' }}" placeholder="https://..."/>
+          </div>
+          <div class="form__group">
+            <label class="form__label">GitHub URL</label>
+            <input type="url" name="github_url" class="form__input"
+                   value="{{ project.github_url if project else '' }}" placeholder="https://github.com/..."/>
+          </div>
+        </div>
+
+        <div class="form__group">
+          <label class="form__label">Project Image</label>
+          {% if project and project.image_url %}
+          <div class="form__img-preview">
+            <img src="{{ url_for('static', filename=project.image_url) }}" alt="Current"/>
+            <span class="text--muted">Upload new to replace</span>
+          </div>
+          {% endif %}
+          <input type="file" name="image" class="form__input" accept="image/*"/>
+        </div>
+
+        <div class="form__group">
+          <label class="form__checkbox-label">
+            <input type="checkbox" name="is_featured" value="1"
+                   {% if project and project.is_featured %}checked{% endif %}/>
+            <span>Feature this project on homepage</span>
+          </label>
+        </div>
+
+        <div class="form__actions">
+          <button type="submit" class="btn btn--primary">
+            <i class="fas fa-save"></i> {{ 'Update Project' if action == 'edit' else 'Create Project' }}
+          </button>
+          <a href="{{ url_for('admin_projects') }}" class="btn btn--ghost">Cancel</a>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}

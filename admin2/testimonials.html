@@ -1,0 +1,100 @@
+{% extends "base.html" %}
+{% block title %}Testimonials — Admin{% endblock %}
+{% block body_class %}admin-page{% endblock %}
+{% block layout %}
+{% include "partials/admin_sidebar.html" %}
+<div class="admin__main">
+  {% include "partials/admin_topbar.html" %}
+  <div class="admin__content">
+    <div class="page-header">
+      <div><h1 class="page-header__title">Testimonials</h1><p class="page-header__sub">Kelola review dari klien</p></div>
+    </div>
+    <div class="dash__row">
+      <!-- Add Form -->
+      <div class="dash__card" style="flex:0 0 320px">
+        <div class="dash__card-header"><h3>Add Testimonial</h3></div>
+        <form method="POST" action="{{ url_for('admin_create_testimonial') }}" enctype="multipart/form-data" class="form--admin" style="padding:1.25rem">
+          <div class="form__group">
+            <label class="form__label">Client Name *</label>
+            <input type="text" name="client_name" class="form__input" required placeholder="John Doe"/>
+          </div>
+          <div class="form__group">
+            <label class="form__label">Title / Jabatan</label>
+            <input type="text" name="client_title" class="form__input" placeholder="CEO / Manager"/>
+          </div>
+          <div class="form__group">
+            <label class="form__label">Company</label>
+            <input type="text" name="client_company" class="form__input" placeholder="PT. Example"/>
+          </div>
+          <div class="form__group">
+            <label class="form__label">Photo</label>
+            <input type="file" name="client_avatar" class="form__input" accept="image/*"/>
+          </div>
+          <div class="form__group">
+            <label class="form__label">Rating (1–5): <span id="ratingVal">5</span></label>
+            <input type="range" name="rating" min="1" max="5" value="5" class="form__range"
+                   oninput="document.getElementById('ratingVal').textContent=this.value"/>
+          </div>
+          <div class="form__group">
+            <label class="form__label">Review *</label>
+            <textarea name="content" class="form__input form__textarea" rows="4" required
+                      placeholder="Review dari klien..."></textarea>
+          </div>
+          <div class="form__group">
+            <label class="form__label">Project Name</label>
+            <input type="text" name="project_name" class="form__input" placeholder="Web App Development"/>
+          </div>
+          <div class="form__group">
+            <label class="form__checkbox-label">
+              <input type="checkbox" name="is_featured" value="1" checked/>
+              <span>Tampilkan di Homepage</span>
+            </label>
+          </div>
+          <button type="submit" class="btn btn--primary btn--full">
+            <i class="fas fa-plus"></i> Add Testimonial
+          </button>
+        </form>
+      </div>
+
+      <!-- List -->
+      <div class="dash__card dash__card--wide">
+        <div class="dash__card-header"><h3>All Testimonials ({{ testimonials|length }})</h3></div>
+        <div style="padding:.5rem">
+          {% for t in testimonials %}
+          <div class="testi-admin-item">
+            <div class="testi-admin-item__left">
+              {% if t.client_avatar %}
+              <img src="{{ url_for('static', filename=t.client_avatar) }}" alt="{{ t.client_name }}" class="testi-admin-item__avatar"/>
+              {% else %}
+              <div class="testi-admin-item__avatar-placeholder">{{ t.client_name[0]|upper }}</div>
+              {% endif %}
+            </div>
+            <div class="testi-admin-item__body">
+              <div class="testi-admin-item__header">
+                <strong>{{ t.client_name }}</strong>
+                <span class="text--muted">{{ t.client_title }}{% if t.client_company %} · {{ t.client_company }}{% endif %}</span>
+                <div class="testi-stars">
+                  {% for i in range(t.rating) %}<i class="fas fa-star"></i>{% endfor %}
+                  {% for i in range(5-t.rating) %}<i class="far fa-star"></i>{% endfor %}
+                </div>
+              </div>
+              <p class="testi-admin-item__content">{{ t.content | truncate(140) }}</p>
+              {% if t.project_name %}<span class="badge badge--outline"><i class="fas fa-folder-open"></i> {{ t.project_name }}</span>{% endif %}
+              {% if t.is_featured %}<span class="badge badge--green">Featured</span>{% endif %}
+            </div>
+            <div class="testi-admin-item__actions">
+              <form action="{{ url_for('admin_delete_testimonial', tid=t.id) }}" method="POST"
+                    onsubmit="return confirm('Hapus testimonial ini?')">
+                <button class="btn btn--danger btn--xs"><i class="fas fa-trash"></i></button>
+              </form>
+            </div>
+          </div>
+          {% else %}
+          <p class="empty-state">Belum ada testimonial. Tambahkan dari form di kiri.</p>
+          {% endfor %}
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

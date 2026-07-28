@@ -1,0 +1,105 @@
+{% extends "base.html" %}
+{% block title %}Setup 2FA — Admin{% endblock %}
+{% block body_class %}admin-page{% endblock %}
+
+{% block layout %}
+{% include "partials/admin_sidebar.html" %}
+<div class="admin__main">
+  {% include "partials/admin_topbar.html" %}
+  <div class="admin__content">
+
+    <div class="page-header">
+      <h1 class="page-header__title"><i class="fas fa-shield-alt" style="color:var(--cyan)"></i> Setup 2FA — Google Authenticator</h1>
+      <a href="{{ url_for('admin_settings') }}" class="btn btn--ghost btn--sm"><i class="fas fa-arrow-left"></i> Back</a>
+    </div>
+
+    <div style="max-width:600px">
+      <div class="dash__card">
+        <div class="dash__card-header">
+          <h3>Step 1 — Scan QR Code</h3>
+        </div>
+        <div style="padding:2rem;display:flex;flex-direction:column;align-items:center;gap:1.5rem;text-align:center;">
+
+          <!-- QR Code -->
+          <div class="totp-qr-wrap">
+            <img src="data:image/png;base64,{{ qr_b64 }}" alt="QR Code" class="totp-qr"/>
+          </div>
+
+          <p style="color:var(--text-2);font-size:.9rem;max-width:400px;">
+            Buka <strong>Google Authenticator</strong>, <strong>Authy</strong>, atau aplikasi TOTP lainnya,
+            lalu scan QR code di atas.
+          </p>
+
+          <!-- Manual entry -->
+          <div class="totp-secret-wrap">
+            <span style="font-size:.75rem;color:var(--text-3);font-family:var(--font-mono);display:block;margin-bottom:.4rem;">ATAU masukkan secret key secara manual:</span>
+            <div class="totp-secret-box">
+              <code id="totpSecret">{{ secret }}</code>
+              <button type="button" onclick="copySecret()" class="btn btn--ghost btn--xs">
+                <i class="fas fa-copy"></i>
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="dash__card" style="margin-top:1.25rem;">
+        <div class="dash__card-header">
+          <h3>Step 2 — Verifikasi OTP</h3>
+        </div>
+        <form method="POST" action="{{ url_for('admin_2fa_verify') }}" style="padding:1.75rem;display:flex;flex-direction:column;gap:1rem;">
+          <p style="color:var(--text-2);font-size:.9rem;">
+            Masukkan 6 digit kode yang muncul di aplikasi authenticator Anda:
+          </p>
+          <div class="form__group">
+            <label class="form__label">Kode OTP</label>
+            <div class="totp-input-wrap">
+              <input type="text" name="code" class="form__input totp-input"
+                     placeholder="000 000" maxlength="6" pattern="\d{6}"
+                     autocomplete="one-time-code" autofocus required/>
+              <i class="fas fa-key totp-input-icon"></i>
+            </div>
+          </div>
+          <button type="submit" class="btn btn--primary btn--full">
+            <i class="fas fa-shield-alt"></i> Aktifkan 2FA
+          </button>
+        </form>
+      </div>
+
+      <div class="dash__card" style="margin-top:1.25rem;border-color:rgba(251,191,36,.2);">
+        <div style="padding:1.25rem;display:flex;gap:.75rem;align-items:flex-start;">
+          <i class="fas fa-triangle-exclamation" style="color:var(--gold);margin-top:.1rem;"></i>
+          <div>
+            <p style="font-size:.88rem;color:var(--text-2);margin-bottom:.5rem;">
+              <strong style="color:var(--gold);">Simpan secret key Anda!</strong>
+            </p>
+            <p style="font-size:.83rem;color:var(--text-3);line-height:1.7;">
+              Jika Anda kehilangan akses ke aplikasi authenticator dan tidak punya backup,
+              Anda tidak akan bisa login. Simpan secret key ini di tempat yang aman.
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+{% block extra_js %}
+<script>
+function copySecret() {
+  const s = document.getElementById('totpSecret').textContent;
+  navigator.clipboard.writeText(s).then(() => {
+    const btn = document.querySelector('.totp-secret-box .btn');
+    btn.innerHTML = '<i class="fas fa-check"></i>';
+    setTimeout(() => btn.innerHTML = '<i class="fas fa-copy"></i>', 2000);
+  });
+}
+// Auto-format OTP input: add space after 3 digits
+document.querySelector('.totp-input').addEventListener('input', function() {
+  const val = this.value.replace(/\D/g,'').slice(0,6);
+  this.value = val;
+});
+</script>
+{% endblock %}
+{% endblock %}

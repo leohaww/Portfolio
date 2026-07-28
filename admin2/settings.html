@@ -2,105 +2,6 @@
 {% block title %}Settings — Admin{% endblock %}
 {% block body_class %}admin-page{% endblock %}
 
-{% block extra_css %}
-<style>
-  /* Page polish: mobile-first + luxurious gradients + better spacing */
-  .admin__content{padding-bottom:2rem;}
-
-  .page-header{
-    margin:1.2rem 0 1rem;
-    padding:1.15rem 1.25rem;
-    border-radius:var(--r-xl);
-    border:1px solid rgba(139,92,246,.18);
-    background:
-      radial-gradient(900px 220px at 12% 0%, rgba(0,245,255,.18), transparent 55%),
-      radial-gradient(700px 180px at 90% 10%, rgba(124,58,237,.22), transparent 50%),
-      rgba(6,6,20,.55);
-    box-shadow:0 0 0 1px rgba(0,245,255,.06) inset, 0 22px 60px rgba(0,0,0,.35);
-    backdrop-filter: blur(10px);
-  }
-  .page-header__title{font-size:1.55rem;letter-spacing:-.02em;}
-  .page-header__sub{margin:.35rem 0 0;color:var(--text-2);font-size:.95rem;line-height:1.4;}
-
-  /* Tabs */
-  .settings-tabs{
-    display:flex;
-    flex-wrap:wrap;
-    gap:.55rem;
-    padding:.85rem 0 .5rem;
-  }
-  .settings-tab{
-    appearance:none;
-    border:1px solid rgba(255,255,255,.10);
-    background:linear-gradient(180deg, rgba(255,255,255,.06), rgba(255,255,255,.02));
-    color:var(--text-1);
-    border-radius:999px;
-    padding:.65rem .95rem;
-    font-weight:600;
-    letter-spacing:.01em;
-    cursor:pointer;
-    transition:transform .15s ease, border-color .15s ease, background .15s ease;
-    display:flex;
-    align-items:center;
-    gap:.55rem;
-    white-space:nowrap;
-    user-select:none;
-  }
-  .settings-tab:hover{transform:translateY(-1px);border-color:rgba(0,245,255,.35)}
-  .settings-tab--active{
-    border-color:rgba(0,245,255,.55);
-    background:linear-gradient(180deg, rgba(0,245,255,.16), rgba(124,58,237,.10));
-    box-shadow:0 0 0 1px rgba(0,245,255,.10) inset, 0 18px 50px rgba(0,245,255,.10);
-  }
-
-  /* Panels */
-  .settings-panel{display:none;}
-  .settings-panel--active{display:block;}
-
-  /* Make admin cards breathe on mobile */
-  .dash__card{border-radius:var(--r-xl);}
-  .dash__card-header{padding:1rem 1.2rem;}
-  .dash__row{gap:1rem;}
-
-  /* Better form controls on mobile */
-  .form--admin .form__group{padding:.25rem 0;}
-  .form--admin input.form__input,
-  .form--admin select.form__input,
-  .form--admin textarea.form__input{width:100%;}
-
-  /* 2-column section should collapse on small screens */
-  @media (max-width: 860px){
-    .dash__row{flex-direction:column;}
-    .page-header{padding:1rem .95rem;}
-    .page-header__title{font-size:1.3rem;}
-    .settings-tabs{gap:.45rem;}
-    .settings-tab{padding:.6rem .8rem;font-size:.95rem;}
-  }
-
-  @media (min-width: 861px){
-    .settings-tabs{padding-top:1rem;}
-  }
-
-  /* Glassy info boxes */
-  .settings-info-box{
-    border:1px solid rgba(255,255,255,.10);
-    background:rgba(10,10,28,.45);
-    border-radius:var(--r-lg);
-    padding:.85rem 1rem;
-    line-height:1.5;
-    color:var(--text-2);
-  }
-
-  /* GitHub preview area */
-  #githubPreviewResult{
-    border:1px dashed rgba(0,245,255,.25);
-    border-radius:var(--r-lg);
-    padding:.85rem;
-    background:rgba(6,6,20,.25);
-  }
-</style>
-{% endblock %}
-
 {% block layout %}
 {% include "partials/admin_sidebar.html" %}
 <div class="admin__main">
@@ -140,7 +41,7 @@
       </button>
     </div>
 
-    <form method="POST" action="{{ url_for('admin_settings_update') }}" enctype="multipart/form-data" class="form--admin" autocomplete="off">
+    <form method="POST" action="{{ url_for('admin_settings_update') }}" enctype="multipart/form-data" class="form--admin">
 
       <!-- ── Personal ───────────────────── -->
       <div class="settings-panel settings-panel--active" id="tab-personal">
@@ -429,26 +330,15 @@
 
 {% block extra_js %}
 <script>
-// Tab switching (mobile-friendly)
+// Tab switching
 document.querySelectorAll('.settings-tab').forEach(tab => {
   tab.addEventListener('click', () => {
     document.querySelectorAll('.settings-tab').forEach(t => t.classList.remove('settings-tab--active'));
     document.querySelectorAll('.settings-panel').forEach(p => p.classList.remove('settings-panel--active'));
     tab.classList.add('settings-tab--active');
-    const panel = document.getElementById('tab-' + tab.dataset.tab);
-    if (panel) panel.classList.add('settings-panel--active');
+    document.getElementById('tab-' + tab.dataset.tab).classList.add('settings-panel--active');
   });
 });
-
-// Ensure first tab visible on initial load (if HTML ever changes)
-(function(){
-  const activeTab = document.querySelector('.settings-tab.settings-tab--active');
-  const activePanel = document.querySelector('.settings-panel.settings-panel--active');
-  if(!activePanel && activeTab){
-    const panel = document.getElementById('tab-' + activeTab.dataset.tab);
-    if(panel) panel.classList.add('settings-panel--active');
-  }
-})();
 
 // Test email
 function testEmail() {

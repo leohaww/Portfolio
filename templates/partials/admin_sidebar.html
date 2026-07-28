@@ -26,6 +26,15 @@
     <a href="{{ url_for('admin_certificates') }}" class="sidebar__link {% if request.endpoint == 'admin_certificates' %}sidebar__link--active{% endif %}">
       <i class="fas fa-certificate"></i> Certificates
     </a>
+    <a href="{{ url_for('admin_testimonials') }}" class="sidebar__link {% if request.endpoint == 'admin_testimonials' %}sidebar__link--active{% endif %}">
+      <i class="fas fa-star"></i> Testimonials
+    </a>
+    <a href="{{ url_for('admin_services') }}" class="sidebar__link {% if request.endpoint == 'admin_services' %}sidebar__link--active{% endif %}">
+      <i class="fas fa-concierge-bell"></i> Services
+    </a>
+    <a href="{{ url_for('admin_blog') }}" class="sidebar__link {% if 'blog' in request.endpoint %}sidebar__link--active{% endif %}">
+      <i class="fas fa-newspaper"></i> Blog
+    </a>
 
     <div class="sidebar__section-label">Communication</div>
     <a href="{{ url_for('admin_messages') }}" class="sidebar__link {% if request.endpoint == 'admin_messages' %}sidebar__link--active{% endif %}">
@@ -33,6 +42,14 @@
       {% if unread_messages > 0 %}
       <span class="sidebar__badge">{{ unread_messages }}</span>
       {% endif %}
+    </a>
+
+    <div class="sidebar__section-label">Tools</div>
+    <a href="{{ url_for('admin_availability') }}" class="sidebar__link {% if 'availability' in request.endpoint %}sidebar__link--active{% endif %}">
+      <i class="fas fa-calendar-check"></i> Availability
+    </a>
+    <a href="{{ url_for('admin_2fa_setup') }}" class="sidebar__link {% if '2fa' in request.endpoint %}sidebar__link--active{% endif %}">
+      <i class="fas fa-shield-alt"></i> 2FA Setup
     </a>
 
     <div class="sidebar__section-label">System</div>

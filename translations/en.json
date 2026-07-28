@@ -1,0 +1,79 @@
+{
+  "nav.about":        "About",
+  "nav.skills":       "Skills",
+  "nav.projects":     "Projects",
+  "nav.services":     "Services",
+  "nav.blog":         "Blog",
+  "nav.contact":      "Contact",
+  "nav.admin":        "Admin",
+
+  "hero.available":   "Available for opportunities",
+  "hero.greeting":    "Hi, I'm",
+  "hero.cta.projects":"View Projects",
+  "hero.cta.contact": "Contact Me",
+  "hero.cta.cv":      "Download CV",
+  "hero.stat.projects":"Projects",
+  "hero.stat.exp":    "Yrs Exp.",
+  "hero.stat.certs":  "Certificates",
+  "hero.stat.visitors":"Visitors",
+
+  "about.title":      "Who I Am",
+  "about.label":      "01 / About",
+  "about.available_for": "Available for",
+  "about.tags.solver":"Problem Solver",
+  "about.tags.team":  "Team Player",
+  "about.tags.agile": "Agile / Scrum",
+  "about.tags.oss":   "Open Source Contributor",
+
+  "skills.title":     "Technical Expertise",
+  "skills.label":     "02 / Skills",
+  "skills.tab.all":   "All",
+
+  "experience.title": "Work History",
+  "experience.label": "03 / Experience",
+  "experience.current":"Current",
+
+  "projects.title":   "Featured Work",
+  "projects.label":   "04 / Projects",
+  "projects.viewall": "View All",
+  "projects.featured":"Featured",
+
+  "education.title":  "Academic & Certifications",
+  "education.label":  "05 / Education",
+
+  "services.title":   "What I Offer",
+  "services.label":   "06 / Services",
+  "services.viewall": "View All Services",
+  "services.popular": "Most Popular",
+  "services.cta":     "Get Started",
+  "services.contact": "Contact Us",
+
+  "testimonials.title":"Client Reviews",
+  "testimonials.label":"07 / Testimonials",
+
+  "blog.title":       "Latest Articles",
+  "blog.label":       "08 / Blog",
+  "blog.viewall":     "All Articles",
+  "blog.readmore":    "Read More",
+  "blog.min_read":    "min read",
+
+  "contact.title":    "Let's Work Together",
+  "contact.label":    "09 / Contact",
+  "contact.intro":    "Have a project? I'd love to hear from you.",
+  "contact.name":     "Name",
+  "contact.email":    "Email",
+  "contact.subject":  "Subject",
+  "contact.message":  "Message",
+  "contact.send":     "Send Message",
+  "contact.success":  "Your message was sent successfully!",
+
+  "availability.available":  "Available",
+  "availability.busy":       "Busy",
+  "availability.booked":     "Booked",
+
+  "footer.built":     "Built with",
+  "footer.rights":    "All rights reserved",
+
+  "lang.id":          "Indonesia",
+  "lang.en":          "English"
+}

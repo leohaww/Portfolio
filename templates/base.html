@@ -4,8 +4,32 @@
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>{% block title %}{{ site_settings.site_name }}{% endblock %} — {{ site_settings.owner_name }}</title>
-  <meta name="description" content="{{ site_settings.meta_description }}"/>
+  <meta name="description" content="{% block meta_desc %}{{ site_settings.meta_description }}{% endblock %}"/>
   <meta name="theme-color" content="#04040f"/>
+  <meta name="author" content="{{ site_settings.owner_name }}"/>
+  <meta name="keywords" content="{% block meta_keywords %}portfolio, full-stack engineer, web developer, python, flask, surabaya{% endblock %}"/>
+
+  <!-- Open Graph / Facebook -->
+  <meta property="og:type"        content="{% block og_type %}website{% endblock %}"/>
+  <meta property="og:url"         content="{{ request.url }}"/>
+  <meta property="og:title"       content="{% block og_title %}{{ site_settings.owner_name }} — {{ site_settings.owner_title }}{% endblock %}"/>
+  <meta property="og:description" content="{% block og_desc %}{{ site_settings.meta_description }}{% endblock %}"/>
+  <meta property="og:image"       content="{% block og_image %}{{ request.host_url }}static/{% if site_settings.owner_avatar %}{{ site_settings.owner_avatar }}{% else %}img/og-default.png{% endif %}{% endblock %}"/>
+  <meta property="og:site_name"   content="{{ site_settings.site_name }}"/>
+  <meta property="og:locale"      content="id_ID"/>
+
+  <!-- Twitter Card -->
+  <meta name="twitter:card"        content="summary_large_image"/>
+  <meta name="twitter:title"       content="{% block tw_title %}{{ site_settings.owner_name }} — {{ site_settings.owner_title }}{% endblock %}"/>
+  <meta name="twitter:description" content="{% block tw_desc %}{{ site_settings.meta_description }}{% endblock %}"/>
+  <meta name="twitter:image"       content="{% block tw_image %}{{ request.host_url }}static/{% if site_settings.owner_avatar %}{{ site_settings.owner_avatar }}{% else %}img/og-default.png{% endif %}{% endblock %}"/>
+  {% if site_settings.twitter_url %}<meta name="twitter:site" content="@{{ site_settings.twitter_url.split('/')[-1] }}"/>{% endif %}
+
+  <!-- Canonical URL -->
+  <link rel="canonical" href="{{ request.url }}"/>
+  {% if site_settings.get('recaptcha_site_key') %}
+  <meta name="recaptcha-site-key" content="{{ site_settings.recaptcha_site_key }}"/>
+  {% endif %}
 
   <!-- Fonts -->
   <link rel="preconnect" href="https://fonts.googleapis.com"/>
@@ -20,6 +44,16 @@
   <link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}"/>
 
   {% block extra_css %}{% endblock %}
+
+  <!-- PWA Manifest -->
+  {% if site_settings.get('pwa_enabled','1') == '1' %}
+  <link rel="manifest" href="/manifest.json"/>
+  <meta name="mobile-web-app-capable" content="yes"/>
+  <meta name="apple-mobile-web-app-capable" content="yes"/>
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
+  <meta name="apple-mobile-web-app-title" content="{{ site_settings.owner_name }}"/>
+  <link rel="apple-touch-icon" href="/static/img/pwa-192.png"/>
+  {% endif %}
 
   <style>
     /* ── HUD Loader ── */
@@ -105,6 +139,13 @@
     else { clearInterval(seq); }
   }, 380);
   setTimeout(() => { loader.classList.add("hide"); }, 1700);
+</script>
+<script>
+// Register Service Worker (PWA)
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.register('/sw.js', { scope: '/' })
+    .catch(err => console.log('SW:', err));
+}
 </script>
 </body>
 </html>

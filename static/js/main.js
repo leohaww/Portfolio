@@ -637,3 +637,371 @@
     });
   });
 })();
+
+
+/* ─────────────────────────────────────────────
+   24. SCROLL-TO-TOP + WHATSAPP FLOAT BUTTONS
+───────────────────────────────────────────── */
+(function initFloatButtons() {
+  const scrollBtn = document.getElementById("scrollTop");
+  const waBtn     = document.getElementById("waFloat");
+  const ring      = document.getElementById("scrollRing");
+  const CIRCUMFERENCE = 138; // 2π × 22
+
+  window.addEventListener("scroll", () => {
+    const scrolled = window.scrollY;
+    const total    = document.documentElement.scrollHeight - window.innerHeight;
+    const pct      = Math.min(scrolled / total, 1);
+
+    // Show/hide at 400px
+    if (scrolled > 400) {
+      scrollBtn && scrollBtn.classList.add("visible");
+      waBtn     && waBtn.classList.add("visible");
+    } else {
+      scrollBtn && scrollBtn.classList.remove("visible");
+      waBtn     && waBtn.classList.remove("visible");
+    }
+
+    // Update ring progress
+    if (ring) {
+      ring.style.strokeDashoffset = CIRCUMFERENCE * (1 - pct);
+    }
+  }, { passive: true });
+
+  // Click scroll to top
+  if (scrollBtn) {
+    scrollBtn.addEventListener("click", () => {
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    });
+  }
+})();
+
+
+/* ─────────────────────────────────────────────
+   25. CV DOWNLOAD — pulse animation on hover
+───────────────────────────────────────────── */
+(function initCVButton() {
+  const btn = document.getElementById("downloadCvBtn");
+  if (!btn) return;
+  btn.addEventListener("click", () => {
+    // Visual feedback
+    const originalHTML = btn.innerHTML;
+    btn.innerHTML = '<i class="fas fa-check"></i> <span>Downloaded!</span>';
+    btn.style.borderColor = "var(--green)";
+    btn.style.color = "var(--green)";
+    setTimeout(() => {
+      btn.innerHTML = originalHTML;
+      btn.style.borderColor = "";
+      btn.style.color = "";
+    }, 2500);
+  });
+})();
+
+
+/* ─────────────────────────────────────────────
+   26. TESTIMONIALS — auto-scroll on mobile
+───────────────────────────────────────────── */
+(function initTestimonialsSlider() {
+  if (window.innerWidth > 768) return;
+  const grid = document.getElementById("testimonialsGrid");
+  if (!grid || grid.children.length < 2) return;
+
+  // On mobile make it horizontally scrollable with snap
+  grid.style.cssText += "display:flex;overflow-x:auto;scroll-snap-type:x mandatory;-webkit-overflow-scrolling:touch;gap:1rem;padding-bottom:1rem;scrollbar-width:none;";
+  Array.from(grid.children).forEach(card => {
+    card.style.cssText += "flex:0 0 85%;scroll-snap-align:start;";
+  });
+})();
+
+
+/* ─────────────────────────────────────────────
+   27. BLOG — reading progress (blog post page)
+───────────────────────────────────────────── */
+(function initReadingProgress() {
+  const bar = document.getElementById("readingBar");
+  if (!bar) return;
+  window.addEventListener("scroll", () => {
+    const h   = document.documentElement;
+    const pct = (window.scrollY / (h.scrollHeight - h.clientHeight)) * 100;
+    bar.style.width = Math.min(pct, 100) + "%";
+  }, { passive: true });
+})();
+
+
+/* ─────────────────────────────────────────────
+   28. SERVICE CARDS — stagger reveal
+───────────────────────────────────────────── */
+(function initServiceCards() {
+  const cards = document.querySelectorAll(".svc-card");
+  if (!cards.length) return;
+  const obs = new IntersectionObserver(entries => {
+    entries.forEach((e, i) => {
+      if (e.isIntersecting) {
+        setTimeout(() => {
+          e.target.style.opacity = "1";
+          e.target.style.transform = "translateY(0)";
+        }, i * 120);
+        obs.unobserve(e.target);
+      }
+    });
+  }, { threshold: 0.1 });
+  cards.forEach(card => {
+    card.style.opacity = "0";
+    card.style.transform = "translateY(30px)";
+    card.style.transition = "opacity .6s ease, transform .6s ease";
+    obs.observe(card);
+  });
+})();
+
+
+/* ═══════════════════════════════════════════════════════════════
+   WEEK 4 + MONTH 2 + MONTH 3  — NEW JS MODULES
+═══════════════════════════════════════════════════════════════ */
+
+/* ─────────────────────────────────────────────
+   29. GITHUB FEED  — fetch & render
+───────────────────────────────────────────── */
+(function initGitHubFeed() {
+  const eventsEl = document.getElementById("githubEvents");
+  const reposEl  = document.getElementById("githubRepos");
+  if (!eventsEl && !reposEl) return;
+
+  const ICON_MAP = {
+    PushEvent:        "fa-code-commit",
+    CreateEvent:      "fa-plus-circle",
+    WatchEvent:       "fa-star",
+    ForkEvent:        "fa-code-branch",
+    PullRequestEvent: "fa-code-pull-request",
+    IssuesEvent:      "fa-circle-dot",
+    DeleteEvent:      "fa-trash-can",
+    ReleaseEvent:     "fa-tag",
+  };
+
+  const LANG_COLORS = {
+    Python:     "#3776ab", JavaScript: "#f7df1e", TypeScript: "#3178c6",
+    Go:         "#00add8", Rust:       "#dea584", Java:       "#b07219",
+    "C++":      "#f34b7d", Ruby:       "#701516", PHP:        "#777bb4",
+    HTML:       "#e34c26", CSS:        "#563d7c", Shell:      "#89e051",
+    Dockerfile: "#384d54", Vue:        "#41b883",
+  };
+
+  fetch("/api/github-feed")
+    .then(r => r.json())
+    .then(data => {
+      if (eventsEl) renderEvents(data.events || []);
+      if (reposEl)  renderRepos(data.repos || []);
+    })
+    .catch(() => {
+      if (eventsEl) eventsEl.innerHTML = '<p class="github-loading">Could not load activity.</p>';
+      if (reposEl)  reposEl.innerHTML  = '<p class="github-loading">Could not load repositories.</p>';
+    });
+
+  function renderEvents(events) {
+    if (!events.length) {
+      eventsEl.innerHTML = '<p class="github-loading">No recent activity found.</p>';
+      return;
+    }
+    eventsEl.innerHTML = events.slice(0, 8).map(ev => `
+      <div class="github-event">
+        <div class="github-event__icon">
+          <i class="fas ${ICON_MAP[ev.type] || 'fa-github'}"></i>
+        </div>
+        <div class="github-event__body">
+          <div class="github-event__repo">${ev.repo}</div>
+          <div class="github-event__msg">${ev.message || ev.type.replace("Event","")}</div>
+        </div>
+        <div class="github-event__date">${ev.date}</div>
+      </div>
+    `).join("");
+  }
+
+  function renderRepos(repos) {
+    if (!repos.length) {
+      reposEl.innerHTML = '<p class="github-loading">No repositories found.</p>';
+      return;
+    }
+    reposEl.innerHTML = repos.map(rp => `
+      <a href="${rp.url}" target="_blank" rel="noopener" class="github-repo">
+        <div class="github-repo__name">
+          <i class="fas fa-code-branch"></i> ${rp.name}
+        </div>
+        ${rp.description ? `<div class="github-repo__desc">${rp.description}</div>` : ""}
+        <div class="github-repo__meta">
+          ${rp.language ? `
+          <span class="github-repo__lang">
+            <span class="github-repo__lang-dot" style="background:${LANG_COLORS[rp.language] || "var(--plasma)"}"></span>
+            ${rp.language}
+          </span>` : ""}
+          ${rp.stars ? `<span class="github-repo__stat"><i class="fas fa-star"></i> ${rp.stars}</span>` : ""}
+          ${rp.forks ? `<span class="github-repo__stat"><i class="fas fa-code-branch"></i> ${rp.forks}</span>` : ""}
+          <span class="github-repo__stat"><i class="fas fa-clock"></i> ${rp.updated}</span>
+        </div>
+      </a>
+    `).join("");
+  }
+})();
+
+
+/* ─────────────────────────────────────────────
+   30. PWA INSTALL BANNER
+───────────────────────────────────────────── */
+(function initPWABanner() {
+  let deferredPrompt = null;
+
+  window.addEventListener("beforeinstallprompt", e => {
+    e.preventDefault();
+    deferredPrompt = e;
+
+    // Don't show again if dismissed in last 7 days
+    const dismissed = localStorage.getItem("pwaBannerDismissed");
+    if (dismissed && Date.now() - parseInt(dismissed) < 7 * 86400000) return;
+
+    // Create banner
+    const banner = document.createElement("div");
+    banner.className = "pwa-banner";
+    banner.id = "pwaBanner";
+    banner.innerHTML = `
+      <div class="pwa-banner__icon"><i class="fas fa-mobile-screen-button"></i></div>
+      <div class="pwa-banner__text">
+        <div class="pwa-banner__title">Install Portfolio App</div>
+        <div class="pwa-banner__sub">Tambahkan ke layar utama untuk akses cepat</div>
+      </div>
+      <div class="pwa-banner__actions">
+        <button class="btn btn--primary btn--sm" id="pwaInstall">
+          <i class="fas fa-download"></i> Install
+        </button>
+        <button class="pwa-banner__dismiss" id="pwaDismiss" title="Tutup">×</button>
+      </div>
+    `;
+    document.body.appendChild(banner);
+
+    setTimeout(() => banner.classList.add("show"), 3000);
+
+    document.getElementById("pwaInstall").addEventListener("click", () => {
+      banner.classList.remove("show");
+      deferredPrompt.prompt();
+      deferredPrompt.userChoice.then(result => {
+        if (result.outcome === "accepted") {
+          setTimeout(() => banner.remove(), 500);
+        }
+        deferredPrompt = null;
+      });
+    });
+
+    document.getElementById("pwaDismiss").addEventListener("click", () => {
+      banner.classList.remove("show");
+      localStorage.setItem("pwaBannerDismissed", String(Date.now()));
+      setTimeout(() => banner.remove(), 400);
+    });
+  });
+
+  window.addEventListener("appinstalled", () => {
+    const b = document.getElementById("pwaBanner");
+    if (b) b.remove();
+  });
+})();
+
+
+/* ─────────────────────────────────────────────
+   31. reCAPTCHA v3 — auto-load & inject token
+───────────────────────────────────────────── */
+(function initRecaptcha() {
+  const contactForm = document.querySelector('form[action*="contact_send"]');
+  if (!contactForm) return;
+
+  // Only load reCAPTCHA if site key is set (injected via meta tag)
+  const siteMeta = document.querySelector('meta[name="recaptcha-site-key"]');
+  if (!siteMeta || !siteMeta.content) {
+    // Add badge explaining protection without reCAPTCHA
+    const badge = document.createElement("div");
+    badge.className = "captcha-badge";
+    badge.innerHTML = '<i class="fas fa-shield-alt"></i> Rate limiting active';
+    const submitBtn = contactForm.querySelector('[type="submit"]');
+    if (submitBtn) submitBtn.parentNode.insertBefore(badge, submitBtn);
+    return;
+  }
+
+  const siteKey = siteMeta.content;
+  const script = document.createElement("script");
+  script.src = `https://www.google.com/recaptcha/api.js?render=${siteKey}`;
+  document.head.appendChild(script);
+
+  contactForm.addEventListener("submit", function(e) {
+    e.preventDefault();
+    if (typeof grecaptcha === "undefined") { this.submit(); return; }
+    grecaptcha.ready(() => {
+      grecaptcha.execute(siteKey, { action: "contact" }).then(token => {
+        let inp = contactForm.querySelector('input[name="g-recaptcha-response"]');
+        if (!inp) {
+          inp = document.createElement("input");
+          inp.type = "hidden";
+          inp.name = "g-recaptcha-response";
+          contactForm.appendChild(inp);
+        }
+        inp.value = token;
+        contactForm.submit();
+      });
+    });
+  });
+})();
+
+
+/* ─────────────────────────────────────────────
+   32. MULTI-LANGUAGE — dynamic label update
+───────────────────────────────────────────── */
+(function initI18nUI() {
+  // Highlight active lang button in nav drawer too
+  const currentLang = document.documentElement.lang || "id";
+  document.querySelectorAll(".lang-btn").forEach(btn => {
+    const href = btn.getAttribute("href") || "";
+    if (href.includes("/" + currentLang)) {
+      btn.classList.add("lang-btn--active");
+    }
+  });
+})();
+
+
+/* ─────────────────────────────────────────────
+   33. IMAGE LAZY LOAD + PROGRESSIVE ENHANCE
+───────────────────────────────────────────── */
+(function initLazyImages() {
+  if (!("IntersectionObserver" in window)) return;
+  const obs = new IntersectionObserver(entries => {
+    entries.forEach(e => {
+      if (e.isIntersecting) {
+        const img = e.target;
+        if (img.dataset.src) {
+          img.src = img.dataset.src;
+          img.removeAttribute("data-src");
+        }
+        img.classList.add("img-loaded");
+        obs.unobserve(img);
+      }
+    });
+  }, { rootMargin: "200px" });
+
+  document.querySelectorAll("img[data-src]").forEach(img => obs.observe(img));
+})();
+
+
+/* ─────────────────────────────────────────────
+   34. SETTINGS TABS — persist active tab
+───────────────────────────────────────────── */
+(function initSettingsTabs() {
+  const tabs = document.querySelectorAll(".settings-tab");
+  if (!tabs.length) return;
+
+  // Restore last active tab
+  const saved = sessionStorage.getItem("activeSettingsTab");
+  if (saved) {
+    tabs.forEach(t => {
+      if (t.dataset.tab === saved) t.click();
+    });
+  }
+
+  tabs.forEach(tab => {
+    tab.addEventListener("click", () => {
+      sessionStorage.setItem("activeSettingsTab", tab.dataset.tab);
+    });
+  });
+})();

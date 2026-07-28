@@ -158,6 +158,89 @@ def init_db():
             referrer      TEXT    DEFAULT '',
             created_at    TEXT    NOT NULL DEFAULT (datetime('now'))
         );
+        -- ── Testimonials ──────────────────────────────────
+        CREATE TABLE IF NOT EXISTS testimonials (
+            id            INTEGER PRIMARY KEY AUTOINCREMENT,
+            client_name   TEXT    NOT NULL,
+            client_title  TEXT    DEFAULT '',
+            client_company TEXT   DEFAULT '',
+            client_avatar TEXT    DEFAULT '',
+            rating        INTEGER DEFAULT 5,
+            content       TEXT    NOT NULL,
+            project_name  TEXT    DEFAULT '',
+            is_featured   INTEGER DEFAULT 1,
+            sort_order    INTEGER DEFAULT 0,
+            created_at    TEXT    NOT NULL DEFAULT (datetime('now'))
+        );
+
+        -- ── Services ──────────────────────────────────────
+        CREATE TABLE IF NOT EXISTS services (
+            id            INTEGER PRIMARY KEY AUTOINCREMENT,
+            title         TEXT    NOT NULL,
+            subtitle      TEXT    DEFAULT '',
+            description   TEXT    DEFAULT '',
+            icon          TEXT    DEFAULT '',
+            price_from    TEXT    DEFAULT '',
+            price_to      TEXT    DEFAULT '',
+            price_unit    TEXT    DEFAULT 'project',
+            features      TEXT    DEFAULT '',
+            is_popular    INTEGER DEFAULT 0,
+            is_active     INTEGER DEFAULT 1,
+            sort_order    INTEGER DEFAULT 0,
+            created_at    TEXT    NOT NULL DEFAULT (datetime('now'))
+        );
+
+        -- ── Blog Posts ────────────────────────────────────
+        CREATE TABLE IF NOT EXISTS blog_posts (
+            id            INTEGER PRIMARY KEY AUTOINCREMENT,
+            title         TEXT    NOT NULL,
+            slug          TEXT    NOT NULL UNIQUE,
+            excerpt       TEXT    DEFAULT '',
+            content       TEXT    DEFAULT '',
+            cover_image   TEXT    DEFAULT '',
+            category      TEXT    DEFAULT 'Tech',
+            tags          TEXT    DEFAULT '',
+            status        TEXT    DEFAULT 'draft',
+            read_time     INTEGER DEFAULT 5,
+            views         INTEGER DEFAULT 0,
+            is_featured   INTEGER DEFAULT 0,
+            published_at  TEXT    DEFAULT '',
+            created_at    TEXT    NOT NULL DEFAULT (datetime('now')),
+            updated_at    TEXT    NOT NULL DEFAULT (datetime('now'))
+        );
+
+        -- ── Rate Limit Log ────────────────────────────────────
+        CREATE TABLE IF NOT EXISTS rate_limits (
+            id            INTEGER PRIMARY KEY AUTOINCREMENT,
+            ip_address    TEXT    NOT NULL,
+            action        TEXT    NOT NULL,
+            created_at    TEXT    NOT NULL DEFAULT (datetime('now'))
+        );
+
+        -- ── Availability Calendar ─────────────────────────────
+        CREATE TABLE IF NOT EXISTS availability (
+            id            INTEGER PRIMARY KEY AUTOINCREMENT,
+            date          TEXT    NOT NULL UNIQUE,
+            status        TEXT    NOT NULL DEFAULT 'available',
+            note          TEXT    DEFAULT '',
+            created_at    TEXT    NOT NULL DEFAULT (datetime('now'))
+        );
+
+        -- ── TOTP Secrets ──────────────────────────────────────
+        CREATE TABLE IF NOT EXISTS totp_secrets (
+            user_id       INTEGER PRIMARY KEY,
+            secret        TEXT    NOT NULL,
+            verified      INTEGER DEFAULT 0,
+            created_at    TEXT    NOT NULL DEFAULT (datetime('now')),
+            FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+        );
+
+        -- ── GitHub Cache ──────────────────────────────────────
+        CREATE TABLE IF NOT EXISTS github_cache (
+            key           TEXT    PRIMARY KEY,
+            data          TEXT    DEFAULT '{}',
+            updated_at    TEXT    NOT NULL DEFAULT (datetime('now'))
+        );
         """)
 
         # ── Seed default admin user ────────────────────────────
@@ -195,6 +278,25 @@ def init_db():
             "primary_color":    "#0a0a0f",
             "accent_color":     "#6c63ff",
             "owner_avatar":     "",
+            # Email
+            "smtp_host":        "",
+            "smtp_port":        "587",
+            "smtp_user":        "",
+            "smtp_pass":        "",
+            "notify_email":     "",
+            # GitHub
+            "github_username":  "leohaww",
+            # Availability
+            "availability_status": "available",
+            "availability_msg":    "Open for new projects!",
+            # Language
+            "default_lang":     "id",
+            # reCAPTCHA
+            "recaptcha_site_key":   "",
+            "recaptcha_secret_key": "",
+            # PWA
+            "pwa_enabled":      "1",
+            "pwa_theme_color":  "#04040f",
         }
         for k, v in defaults.items():
             conn.execute("INSERT OR IGNORE INTO settings (key, value) VALUES (?, ?)", (k, v))
@@ -574,3 +676,277 @@ def get_visitor_stats():
             "top_pages": [dict(r) for r in top_pages],
             "daily_7d": [dict(r) for r in daily_7d],
         }
+
+
+# ─────────────────────────────────────────────
+#  Testimonials
+# ─────────────────────────────────────────────
+def create_testimonial(client_name, client_title="", client_company="",
+                       client_avatar="", rating=5, content="",
+                       project_name="", is_featured=1):
+    with get_db() as conn:
+        conn.execute("""
+            INSERT INTO testimonials
+              (client_name, client_title, client_company, client_avatar,
+               rating, content, project_name, is_featured)
+            VALUES (?,?,?,?,?,?,?,?)
+        """, (client_name, client_title, client_company, client_avatar,
+              rating, content, project_name, is_featured))
+        conn.commit()
+
+def get_all_testimonials(featured_only=False):
+    sql = "SELECT * FROM testimonials"
+    if featured_only:
+        sql += " WHERE is_featured=1"
+    sql += " ORDER BY sort_order ASC, created_at DESC"
+    with get_db() as conn:
+        return conn.execute(sql).fetchall()
+
+def delete_testimonial(tid):
+    with get_db() as conn:
+        conn.execute("DELETE FROM testimonials WHERE id=?", (tid,))
+        conn.commit()
+
+def update_testimonial(tid, **kwargs):
+    allowed = ["client_name","client_title","client_company","client_avatar",
+               "rating","content","project_name","is_featured","sort_order"]
+    sets = ", ".join(f"{k}=?" for k in kwargs if k in allowed)
+    vals = [v for k,v in kwargs.items() if k in allowed]
+    if sets:
+        with get_db() as conn:
+            conn.execute(f"UPDATE testimonials SET {sets} WHERE id=?", (*vals, tid))
+            conn.commit()
+
+
+# ─────────────────────────────────────────────
+#  Services
+# ─────────────────────────────────────────────
+def create_service(title, subtitle="", description="", icon="",
+                   price_from="", price_to="", price_unit="project",
+                   features="", is_popular=0):
+    with get_db() as conn:
+        conn.execute("""
+            INSERT INTO services
+              (title, subtitle, description, icon, price_from, price_to,
+               price_unit, features, is_popular)
+            VALUES (?,?,?,?,?,?,?,?,?)
+        """, (title, subtitle, description, icon, price_from, price_to,
+              price_unit, features, is_popular))
+        conn.commit()
+
+def get_all_services():
+    with get_db() as conn:
+        return conn.execute(
+            "SELECT * FROM services WHERE is_active=1 ORDER BY sort_order ASC, created_at ASC"
+        ).fetchall()
+
+def delete_service(sid):
+    with get_db() as conn:
+        conn.execute("DELETE FROM services WHERE id=?", (sid,))
+        conn.commit()
+
+def update_service(sid, **kwargs):
+    allowed = ["title","subtitle","description","icon","price_from","price_to",
+               "price_unit","features","is_popular","is_active","sort_order"]
+    sets = ", ".join(f"{k}=?" for k in kwargs if k in allowed)
+    vals = [v for k,v in kwargs.items() if k in allowed]
+    if sets:
+        with get_db() as conn:
+            conn.execute(f"UPDATE services SET {sets} WHERE id=?", (*vals, sid))
+            conn.commit()
+
+
+# ─────────────────────────────────────────────
+#  Blog Posts
+# ─────────────────────────────────────────────
+def _slugify(text):
+    import re
+    text = text.lower().strip()
+    text = re.sub(r'[^\w\s-]', '', text)
+    text = re.sub(r'[\s_-]+', '-', text)
+    return text
+
+def create_blog_post(title, excerpt="", content="", cover_image="",
+                     category="Tech", tags="", status="draft",
+                     read_time=5, is_featured=0):
+    slug = _slugify(title)
+    # ensure unique slug
+    base = slug
+    i = 1
+    while True:
+        with get_db() as conn:
+            existing = conn.execute("SELECT id FROM blog_posts WHERE slug=?", (slug,)).fetchone()
+        if not existing:
+            break
+        slug = f"{base}-{i}"; i += 1
+
+    published_at = datetime.now().isoformat() if status == "published" else ""
+    with get_db() as conn:
+        conn.execute("""
+            INSERT INTO blog_posts
+              (title, slug, excerpt, content, cover_image, category, tags,
+               status, read_time, is_featured, published_at)
+            VALUES (?,?,?,?,?,?,?,?,?,?,?)
+        """, (title, slug, excerpt, content, cover_image, category, tags,
+              status, read_time, is_featured, published_at))
+        conn.commit()
+    return slug
+
+def get_all_blog_posts(status=None, category=None, search=None, limit=None, featured_only=False):
+    sql = "SELECT * FROM blog_posts WHERE 1=1"
+    params = []
+    if status:
+        sql += " AND status=?"; params.append(status)
+    if category:
+        sql += " AND category=?"; params.append(category)
+    if search:
+        sql += " AND (title LIKE ? OR excerpt LIKE ? OR tags LIKE ?)"
+        params.extend([f"%{search}%"]*3)
+    if featured_only:
+        sql += " AND is_featured=1"
+    sql += " ORDER BY is_featured DESC, published_at DESC, created_at DESC"
+    if limit:
+        sql += f" LIMIT {int(limit)}"
+    with get_db() as conn:
+        return conn.execute(sql, params).fetchall()
+
+def get_blog_post_by_slug(slug):
+    with get_db() as conn:
+        return conn.execute("SELECT * FROM blog_posts WHERE slug=?", (slug,)).fetchone()
+
+def get_blog_post_by_id(pid):
+    with get_db() as conn:
+        return conn.execute("SELECT * FROM blog_posts WHERE id=?", (pid,)).fetchone()
+
+def update_blog_post(pid, **kwargs):
+    allowed = ["title","excerpt","content","cover_image","category","tags",
+               "status","read_time","is_featured","published_at"]
+    # auto-set published_at when publishing
+    if kwargs.get("status") == "published" and not kwargs.get("published_at"):
+        kwargs["published_at"] = datetime.now().isoformat()
+    sets = ", ".join(f"{k}=?" for k in kwargs if k in allowed)
+    vals = [v for k,v in kwargs.items() if k in allowed]
+    if sets:
+        with get_db() as conn:
+            conn.execute(
+                f"UPDATE blog_posts SET {sets}, updated_at=datetime('now') WHERE id=?",
+                (*vals, pid)
+            )
+            conn.commit()
+
+def increment_blog_views(slug):
+    with get_db() as conn:
+        conn.execute("UPDATE blog_posts SET views=views+1 WHERE slug=?", (slug,))
+        conn.commit()
+
+def delete_blog_post(pid):
+    with get_db() as conn:
+        conn.execute("DELETE FROM blog_posts WHERE id=?", (pid,))
+        conn.commit()
+
+
+# ─────────────────────────────────────────────
+#  Rate Limiting
+# ─────────────────────────────────────────────
+def check_rate_limit(ip, action, max_count, window_seconds):
+    """Return True if allowed, False if rate limited."""
+    with get_db() as conn:
+        # Purge old records
+        conn.execute("""
+            DELETE FROM rate_limits
+            WHERE action=? AND created_at < datetime('now', ? || ' seconds')
+        """, (action, f"-{window_seconds}"))
+        count = conn.execute(
+            "SELECT COUNT(*) FROM rate_limits WHERE ip_address=? AND action=?",
+            (ip, action)
+        ).fetchone()[0]
+        if count >= max_count:
+            return False
+        conn.execute(
+            "INSERT INTO rate_limits (ip_address, action) VALUES (?,?)",
+            (ip, action)
+        )
+        conn.commit()
+        return True
+
+
+# ─────────────────────────────────────────────
+#  Availability Calendar
+# ─────────────────────────────────────────────
+def set_availability(date, status, note=""):
+    with get_db() as conn:
+        conn.execute("""
+            INSERT INTO availability (date, status, note)
+            VALUES (?,?,?)
+            ON CONFLICT(date) DO UPDATE SET status=excluded.status, note=excluded.note
+        """, (date, status, note))
+        conn.commit()
+
+def get_availability(year, month):
+    from calendar import monthrange
+    first = f"{year:04d}-{month:02d}-01"
+    last  = f"{year:04d}-{month:02d}-{monthrange(year, month)[1]:02d}"
+    with get_db() as conn:
+        rows = conn.execute(
+            "SELECT date, status, note FROM availability WHERE date BETWEEN ? AND ?",
+            (first, last)
+        ).fetchall()
+        return {r["date"]: {"status": r["status"], "note": r["note"]} for r in rows}
+
+def delete_availability(date):
+    with get_db() as conn:
+        conn.execute("DELETE FROM availability WHERE date=?", (date,))
+        conn.commit()
+
+
+# ─────────────────────────────────────────────
+#  TOTP (2FA)
+# ─────────────────────────────────────────────
+def save_totp_secret(user_id, secret):
+    with get_db() as conn:
+        conn.execute("""
+            INSERT INTO totp_secrets (user_id, secret, verified)
+            VALUES (?,?,0)
+            ON CONFLICT(user_id) DO UPDATE SET secret=excluded.secret, verified=0
+        """, (user_id, secret))
+        conn.commit()
+
+def get_totp_secret(user_id):
+    with get_db() as conn:
+        row = conn.execute(
+            "SELECT secret, verified FROM totp_secrets WHERE user_id=?", (user_id,)
+        ).fetchone()
+        return dict(row) if row else None
+
+def verify_totp_secret(user_id):
+    with get_db() as conn:
+        conn.execute(
+            "UPDATE totp_secrets SET verified=1 WHERE user_id=?", (user_id,)
+        )
+        conn.commit()
+
+def delete_totp_secret(user_id):
+    with get_db() as conn:
+        conn.execute("DELETE FROM totp_secrets WHERE user_id=?", (user_id,))
+        conn.commit()
+
+
+# ─────────────────────────────────────────────
+#  GitHub Cache
+# ─────────────────────────────────────────────
+def get_github_cache(key):
+    with get_db() as conn:
+        row = conn.execute(
+            "SELECT data, updated_at FROM github_cache WHERE key=?", (key,)
+        ).fetchone()
+        return dict(row) if row else None
+
+def set_github_cache(key, data):
+    import json
+    with get_db() as conn:
+        conn.execute("""
+            INSERT INTO github_cache (key, data, updated_at)
+            VALUES (?,?,datetime('now'))
+            ON CONFLICT(key) DO UPDATE SET data=excluded.data, updated_at=excluded.updated_at
+        """, (key, json.dumps(data) if not isinstance(data, str) else data))
+        conn.commit()

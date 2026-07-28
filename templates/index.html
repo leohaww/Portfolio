@@ -2,25 +2,419 @@
 {% block title %}Home{% endblock %}
 {% block body_class %}public-page{% endblock %}
 
+{# ── Auto-Icon Macro ────────────────────────────────────────── #}
+{% macro auto_icon(name, fallback='') %}
+  {%- set n = name | lower | replace(' ','') | replace('.','-') | replace('/','-') | replace('#','sharp') -%}
+  {%- set m = {
+    'python':'devicon-python-plain colored','flask':'devicon-flask-original',
+    'flaskfastapi':'devicon-flask-original','fastapi':'devicon-fastapi-plain colored',
+    'django':'devicon-django-plain colored','sqlalchemy':'devicon-sqlalchemy-plain colored',
+    'postgresql':'devicon-postgresql-plain colored','postgres':'devicon-postgresql-plain colored',
+    'mysql':'devicon-mysql-plain colored','mongodb':'devicon-mongodb-plain colored',
+    'redis':'devicon-redis-plain colored','sqlite':'devicon-sqlite-plain colored',
+    'docker':'devicon-docker-plain colored','kubernetes':'devicon-kubernetes-plain colored',
+    'git':'devicon-git-plain colored','gitgithub':'devicon-github-original',
+    'github':'devicon-github-original','gitlab':'devicon-gitlab-plain colored',
+    'aws':'devicon-amazonwebservices-plain-wordmark colored',
+    'gcp':'devicon-googlecloud-plain colored','azure':'devicon-azure-plain colored',
+    'linux':'devicon-linux-plain','nginx':'devicon-nginx-original colored',
+    'javascript':'devicon-javascript-plain colored','typescript':'devicon-typescript-plain colored',
+    'react':'devicon-react-original colored','reactjs':'devicon-react-original colored',
+    'nextjs':'devicon-nextjs-plain','vuejs':'devicon-vuejs-plain colored',
+    'vue':'devicon-vuejs-plain colored','angular':'devicon-angularjs-plain colored',
+    'tailwindcss':'devicon-tailwindcss-plain colored','tailwind':'devicon-tailwindcss-plain colored',
+    'bootstrap':'devicon-bootstrap-plain colored','html':'devicon-html5-plain colored',
+    'html5':'devicon-html5-plain colored','css':'devicon-css3-plain colored',
+    'sass':'devicon-sass-original colored','nodejs':'devicon-nodejs-plain colored',
+    'graphql':'devicon-graphql-plain colored','java':'devicon-java-plain colored',
+    'kotlin':'devicon-kotlin-plain colored','swift':'devicon-swift-plain colored',
+    'go':'devicon-go-plain colored','golang':'devicon-go-plain colored',
+    'rust':'devicon-rust-plain','php':'devicon-php-plain colored',
+    'laravel':'devicon-laravel-plain colored','figma':'devicon-figma-plain colored',
+    'terraform':'devicon-terraform-plain colored','pandas':'devicon-pandas-original colored',
+    'tensorflow':'devicon-tensorflow-original colored','pytorch':'devicon-pytorch-original colored',
+    'socketio':'devicon-socketio-original','socket-io':'devicon-socketio-original',
+    'celery':'fas fa-tasks','eventlet':'fas fa-bolt',
+    'structuredschema':'fas fa-sitemap','reliablestorage':'fas fa-hdd',
+    'scalabledesign':'fas fa-layer-group','responsiveui':'fas fa-mobile-alt',
+    'mobilefirst':'fas fa-mobile-screen-button','progressivewebapp':'fas fa-rocket',
+    'pwa':'fas fa-mobile-screen-button','interactivedashboard':'fas fa-chart-bar',
+    'restapi':'fas fa-plug','cicd':'fas fa-infinity'
+  } -%}
+  {%- if fallback and fallback|trim != '' -%}{{ fallback }}
+  {%- elif n in m -%}{{ m[n] }}
+  {%- elif 'python' in n -%}devicon-python-plain colored
+  {%- elif 'flask' in n -%}devicon-flask-original
+  {%- elif 'fast' in n -%}devicon-fastapi-plain colored
+  {%- elif 'mysql' in n -%}devicon-mysql-plain colored
+  {%- elif 'postgres' in n or 'sql' in n -%}devicon-postgresql-plain colored
+  {%- elif 'mongo' in n -%}devicon-mongodb-plain colored
+  {%- elif 'redis' in n -%}devicon-redis-plain colored
+  {%- elif 'docker' in n -%}devicon-docker-plain colored
+  {%- elif 'kube' in n -%}devicon-kubernetes-plain colored
+  {%- elif 'github' in n -%}devicon-github-original
+  {%- elif 'git' in n -%}devicon-git-plain colored
+  {%- elif 'aws' in n or 'amazon' in n -%}devicon-amazonwebservices-plain-wordmark colored
+  {%- elif 'azure' in n -%}devicon-azure-plain colored
+  {%- elif 'gcp' in n or 'google' in n -%}devicon-googlecloud-plain colored
+  {%- elif 'react' in n -%}devicon-react-original colored
+  {%- elif 'next' in n -%}devicon-nextjs-plain
+  {%- elif 'vue' in n -%}devicon-vuejs-plain colored
+  {%- elif 'tailwind' in n -%}devicon-tailwindcss-plain colored
+  {%- elif 'javascript' in n -%}devicon-javascript-plain colored
+  {%- elif 'typescript' in n -%}devicon-typescript-plain colored
+  {%- elif 'html' in n -%}devicon-html5-plain colored
+  {%- elif 'css' in n -%}devicon-css3-plain colored
+  {%- elif 'node' in n -%}devicon-nodejs-plain colored
+  {%- elif 'java' in n -%}devicon-java-plain colored
+  {%- elif 'kotlin' in n -%}devicon-kotlin-plain colored
+  {%- elif 'mobile' in n or 'responsive' in n -%}fas fa-mobile-alt
+  {%- elif 'dashboard' in n or 'chart' in n -%}fas fa-chart-bar
+  {%- elif 'schema' in n -%}fas fa-sitemap
+  {%- elif 'storage' in n -%}fas fa-hdd
+  {%- elif 'design' in n -%}fas fa-pen-ruler
+  {%- elif 'api' in n or 'rest' in n -%}fas fa-plug
+  {%- elif 'cloud' in n -%}fas fa-cloud
+  {%- elif 'pwa' in n or 'progressive' in n -%}fas fa-mobile-screen-button
+  {%- elif 'event' in n or 'celery' in n -%}fas fa-bolt
+  {%- else -%}fas fa-code{%- endif %}
+{%- endmacro %}
+
 {% block layout %}
-<!-- ═══════════════════════════════════════════
-     PUBLIC NAVIGATION
-═══════════════════════════════════════════ -->
+
+
+<!-- ═══ THEME SYSTEM ═══ -->
+<script>
+(function(){
+'use strict';
+
+var _lmStyle = null;
+
+function buildLightCSS() {
+  return [
+    'html body{background-color:#f0f1ff!important;',
+    'background-image:radial-gradient(ellipse 2000px 1200px at 15% -10%,rgba(79,70,229,.07) 0%,transparent 55%),',
+    'radial-gradient(ellipse 1400px 900px at 85% 110%,rgba(245,158,11,.06) 0%,transparent 55%),',
+    'radial-gradient(circle 1px at center,rgba(79,70,229,.22) 0%,transparent 100%)',
+    '!important;background-size:100% 100%,100% 100%,28px 28px!important;color:#0a0a20!important;}',
+
+    /* NAV */
+    'html body .nav{background:rgba(255,255,255,.92)!important;backdrop-filter:blur(30px) saturate(2)!important;-webkit-backdrop-filter:blur(30px) saturate(2)!important;border-bottom:1px solid rgba(79,70,229,.1)!important;box-shadow:0 2px 40px rgba(79,70,229,.08)!important;}',
+    'html body .nav::after{content:"";position:absolute;bottom:0;left:0;right:0;height:2px;background:linear-gradient(90deg,transparent,#4f46e5 20%,#a855f7 50%,#d97706 80%,transparent);opacity:.7;}',
+    'html body .nav__logo{color:#0a0a20!important;}',
+    'html body .nav__logo-dot{background:#4f46e5!important;box-shadow:0 0 0 4px rgba(79,70,229,.15)!important;animation:none!important;}',
+    'html body .nav__link{color:#1e1f40!important;font-weight:500!important;}',
+    'html body .nav__link:hover,html body .nav__link--active{color:#4f46e5!important;}',
+    'html body .nav__link--active{font-weight:700!important;}',
+    'html body .nav__drawer{background:rgba(255,255,255,.98)!important;}',
+    'html body .nav__drawer a{color:#1e1f40!important;}',
+    'html body .nav__hamburger span{background:#1e1f40!important;}',
+    'html body .nav__progress{background:linear-gradient(90deg,#4f46e5,#a855f7,#d97706)!important;}',
+
+    /* HERO */
+    'html body .hero{background:radial-gradient(ellipse 700px 500px at 70% 40%,rgba(168,85,247,.07) 0%,transparent 60%),radial-gradient(ellipse 900px 600px at 20% 60%,rgba(245,158,11,.06) 0%,transparent 60%),linear-gradient(150deg,#eef0ff 0%,#f5f0ff 25%,#fff8f0 55%,#f0f4ff 80%,#eef0ff 100%)!important;overflow:hidden!important;}',
+    'html body .hero__grid-bg{background-image:linear-gradient(rgba(79,70,229,.06) 1px,transparent 1px),linear-gradient(90deg,rgba(79,70,229,.06) 1px,transparent 1px)!important;background-size:50px 50px!important;opacity:1!important;filter:none!important;}',
+    'html body .hero__glow--1{background:radial-gradient(ellipse 700px 500px,rgba(79,70,229,.1) 0%,transparent 65%)!important;}',
+    'html body .hero__glow--2{background:radial-gradient(ellipse 500px 400px,rgba(217,119,6,.09) 0%,transparent 65%)!important;}',
+    'html body .hero__badge{background:linear-gradient(135deg,rgba(79,70,229,.1),rgba(168,85,247,.07))!important;border:1px solid rgba(79,70,229,.2)!important;color:#4338ca!important;backdrop-filter:blur(12px)!important;}',
+    'html body .hero__badge-dot{background:#059669!important;box-shadow:0 0 0 3px rgba(5,150,105,.15),0 0 12px rgba(5,150,105,.4)!important;}',
+    'html body .hero__name-main{background:linear-gradient(128deg,#0a0a20 0%,#4f46e5 40%,#a855f7 65%,#d97706 100%)!important;-webkit-background-clip:text!important;background-clip:text!important;-webkit-text-fill-color:transparent!important;}',
+    'html body .hero__name-line{color:#1e1f40!important;}',
+    'html body .hero__title{color:#4f46e5!important;font-weight:700!important;}',
+    'html body .hero__sub{color:#35366a!important;}',
+    'html body .hero__stat-num{color:#4f46e5!important;}',
+    'html body .hero__stat-label{color:#6366a0!important;}',
+    'html body .hero__stat{border-right-color:rgba(99,102,241,.15)!important;}',
+    'html body .hero__scroll-hint span{color:#9498c5!important;}',
+    'html body .hero__scroll-line{background:linear-gradient(to bottom,#4f46e5,transparent)!important;}',
+    'html body .ficon{opacity:.35!important;filter:saturate(1.6) brightness(.78)!important;}',
+
+    /* BUTTONS */
+    'html body .btn--primary{background:linear-gradient(135deg,#4f46e5,#7c3aed)!important;border-color:#4f46e5!important;box-shadow:0 4px 24px rgba(79,70,229,.45)!important;}',
+    'html body .btn--outline{color:#4f46e5!important;border-color:rgba(79,70,229,.4)!important;background:rgba(79,70,229,.05)!important;}',
+    'html body .btn--cv{background:rgba(217,119,6,.07)!important;border-color:rgba(217,119,6,.3)!important;color:#92400e!important;}',
+    'html body .btn--ghost{color:#1e1f40!important;border-color:rgba(79,70,229,.22)!important;}',
+    'html body .btn--ghost:hover{background:rgba(79,70,229,.06)!important;color:#4f46e5!important;}',
+
+    /* SECTIONS */
+    'html body .section{background:transparent!important;}',
+    'html body .section--dark{background:linear-gradient(180deg,rgba(79,70,229,.035) 0%,rgba(245,158,11,.02) 60%,transparent 100%)!important;}',
+    'html body .section__label{color:#d97706!important;letter-spacing:.2em!important;font-weight:700!important;}',
+    'html body .section__title{background:linear-gradient(130deg,#0a0a20 30%,#4f46e5 70%,#a855f7 100%)!important;-webkit-background-clip:text!important;background-clip:text!important;-webkit-text-fill-color:transparent!important;}',
+    'html body .section__link{color:#4f46e5!important;}',
+    'html body .section__link:hover{color:#d97706!important;}',
+    'html body .subsection__title{color:#0a0a20!important;}',
+    'html body .subsection__title i{color:#d97706!important;}',
+
+    /* ABOUT */
+    'html body .about__lead{color:#0a0a20!important;}',
+    'html body .about__lead strong{color:#4f46e5!important;}',
+    'html body .about__text p{color:#2d2f60!important;}',
+    'html body .about__card{background:rgba(255,255,255,.72)!important;backdrop-filter:blur(24px) saturate(1.8)!important;-webkit-backdrop-filter:blur(24px) saturate(1.8)!important;border:1px solid rgba(79,70,229,.14)!important;box-shadow:0 8px 40px rgba(79,70,229,.08),0 0 0 1px rgba(255,255,255,.7) inset!important;}',
+    'html body .about__card-item{color:#1e1f40!important;}',
+    'html body .about__card-item i{color:#4f46e5!important;}',
+    'html body .about__social{background:rgba(255,255,255,.7)!important;backdrop-filter:blur(12px)!important;border:1px solid rgba(79,70,229,.15)!important;color:#1e1f40!important;}',
+    'html body .about__social:hover{background:#4f46e5!important;color:#fff!important;}',
+    'html body .tag{background:rgba(79,70,229,.07)!important;border:1px solid rgba(79,70,229,.2)!important;color:#4338ca!important;}',
+
+    /* SKILLS */
+    'html body .skills__tab{background:rgba(255,255,255,.65)!important;backdrop-filter:blur(12px)!important;border:1px solid rgba(79,70,229,.13)!important;color:#35366a!important;}',
+    'html body .skills__tab--active,html body .skills__tab:hover{background:rgba(79,70,229,.1)!important;border-color:rgba(79,70,229,.32)!important;color:#4f46e5!important;}',
+    'html body .skill-card{background:rgba(255,255,255,.65)!important;backdrop-filter:blur(20px) saturate(1.6)!important;-webkit-backdrop-filter:blur(20px) saturate(1.6)!important;border:1px solid rgba(79,70,229,.12)!important;box-shadow:0 4px 24px rgba(79,70,229,.06)!important;}',
+    'html body .skill-card:hover{background:rgba(255,255,255,.88)!important;border-color:rgba(79,70,229,.3)!important;box-shadow:0 12px 40px rgba(79,70,229,.12)!important;}',
+    'html body .skill-card__icon-wrap{background:linear-gradient(135deg,rgba(79,70,229,.1),rgba(217,119,6,.07))!important;border-color:rgba(79,70,229,.16)!important;}',
+    'html body .skill-card__name{color:#0a0a20!important;font-weight:700!important;}',
+    'html body .skill-card__cat{color:#6366a0!important;}',
+    'html body .skill-card__pct{color:#4f46e5!important;font-weight:800!important;}',
+    'html body .skill-card__bar{background:rgba(79,70,229,.1)!important;}',
+    'html body .skill-card__fill{background:linear-gradient(90deg,#4f46e5,#a855f7 60%,#d97706)!important;box-shadow:0 0 10px rgba(79,70,229,.3)!important;}',
+
+    /* PROJECTS */
+    'html body .project-card{background:rgba(255,255,255,.65)!important;backdrop-filter:blur(20px) saturate(1.6)!important;-webkit-backdrop-filter:blur(20px) saturate(1.6)!important;border:1px solid rgba(79,70,229,.12)!important;box-shadow:0 4px 28px rgba(79,70,229,.07)!important;}',
+    'html body .project-card:hover{background:rgba(255,255,255,.9)!important;border-color:rgba(79,70,229,.28)!important;box-shadow:0 20px 60px rgba(79,70,229,.14)!important;}',
+    'html body .project-card__title{color:#0a0a20!important;font-weight:800!important;}',
+    'html body .project-card__desc{color:#2d2f60!important;}',
+    'html body .tech-tag{background:rgba(79,70,229,.07)!important;border:1px solid rgba(79,70,229,.18)!important;color:#4338ca!important;}',
+    'html body .badge--accent{background:linear-gradient(135deg,rgba(217,119,6,.14),rgba(245,158,11,.09))!important;color:#92400e!important;border:1px solid rgba(217,119,6,.22)!important;}',
+    'html body .badge--outline{background:rgba(79,70,229,.06)!important;border-color:rgba(79,70,229,.18)!important;color:#4338ca!important;}',
+
+    /* EDUCATION */
+    'html body .edu-card{background:rgba(255,255,255,.68)!important;backdrop-filter:blur(14px)!important;border:1px solid rgba(79,70,229,.13)!important;}',
+    'html body .edu-card__year{color:#d97706!important;font-weight:800!important;}',
+    'html body .edu-card h4{color:#0a0a20!important;font-weight:700!important;}',
+    'html body .edu-card__inst{color:#6366a0!important;}',
+    'html body .cert-card{background:rgba(255,255,255,.68)!important;backdrop-filter:blur(14px)!important;border:1px solid rgba(79,70,229,.13)!important;}',
+    'html body .cert-card:hover{border-color:rgba(217,119,6,.3)!important;box-shadow:0 8px 32px rgba(217,119,6,.1)!important;}',
+    'html body .cert-card__name{color:#0a0a20!important;font-weight:700!important;}',
+    'html body .cert-card__issuer{color:#6366a0!important;}',
+    'html body .cert-card__icon i{color:#d97706!important;}',
+
+    /* TESTIMONIALS */
+    'html body .testi-card{background:rgba(255,255,255,.68)!important;backdrop-filter:blur(20px) saturate(1.6)!important;-webkit-backdrop-filter:blur(20px) saturate(1.6)!important;border:1px solid rgba(79,70,229,.12)!important;box-shadow:0 4px 24px rgba(79,70,229,.07)!important;}',
+    'html body .testi-card:hover{background:rgba(255,255,255,.9)!important;border-color:rgba(79,70,229,.26)!important;}',
+    'html body .testi-card__quote{color:#2d2f60!important;border-left:3px solid rgba(217,119,6,.5)!important;font-style:italic!important;}',
+    'html body .testi-card__quote-icon{color:#d97706!important;}',
+    'html body .testi-card__name{color:#0a0a20!important;font-weight:700!important;}',
+    'html body .testi-card__title{color:#6366a0!important;}',
+    'html body .testi-card__stars .fa-star{color:#d97706!important;}',
+    'html body .testi-card__project{color:#6366a0!important;}',
+
+    /* BLOG */
+    'html body .blog-card{background:rgba(255,255,255,.68)!important;backdrop-filter:blur(20px) saturate(1.6)!important;-webkit-backdrop-filter:blur(20px) saturate(1.6)!important;border:1px solid rgba(79,70,229,.12)!important;box-shadow:0 4px 24px rgba(79,70,229,.07)!important;}',
+    'html body .blog-card:hover{background:rgba(255,255,255,.9)!important;border-color:rgba(79,70,229,.26)!important;box-shadow:0 14px 42px rgba(79,70,229,.12)!important;}',
+    'html body .blog-card__title a{color:#0a0a20!important;font-weight:700!important;}',
+    'html body .blog-card__title a:hover{color:#4f46e5!important;}',
+    'html body .blog-card__excerpt{color:#2d2f60!important;}',
+    'html body .blog-card__date,html body .blog-meta-item{color:#6366a0!important;}',
+    'html body .blog-meta-item i{color:#d97706!important;}',
+    'html body .blog-cat{background:rgba(217,119,6,.08)!important;border:1px solid rgba(217,119,6,.2)!important;color:#92400e!important;}',
+
+    /* CONTACT */
+    'html body .contact__intro{color:#2d2f60!important;}',
+    'html body .contact__detail{color:#1e1f40!important;}',
+    'html body .contact__detail i{color:#4f46e5!important;}',
+    'html body .contact__socials a{background:rgba(255,255,255,.7)!important;backdrop-filter:blur(10px)!important;border:1px solid rgba(79,70,229,.15)!important;color:#1e1f40!important;}',
+    'html body .contact__socials a:hover{background:#4f46e5!important;color:#fff!important;}',
+    'html body .contact__form{background:rgba(255,255,255,.7)!important;backdrop-filter:blur(28px) saturate(1.8)!important;-webkit-backdrop-filter:blur(28px) saturate(1.8)!important;border:1px solid rgba(79,70,229,.14)!important;border-radius:1.5rem!important;padding:2rem!important;box-shadow:0 10px 50px rgba(79,70,229,.09),0 0 0 1px rgba(255,255,255,.6) inset!important;}',
+    'html body .form__label{color:#1e1f40!important;font-weight:600!important;}',
+    'html body .form__input{background:rgba(248,249,255,.85)!important;border:1px solid rgba(79,70,229,.18)!important;color:#0a0a20!important;}',
+    'html body .form__input:focus{background:rgba(255,255,255,.96)!important;border-color:#4f46e5!important;box-shadow:0 0 0 3px rgba(79,70,229,.12)!important;}',
+    'html body .form__input::placeholder{color:#9498c5!important;}',
+
+    /* FOOTER */
+    'html body .footer{background:rgba(255,255,255,.88)!important;backdrop-filter:blur(24px)!important;border-top:1px solid rgba(79,70,229,.1)!important;box-shadow:0 -4px 40px rgba(79,70,229,.05)!important;position:relative!important;}',
+    'html body .footer::before{content:"";position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,transparent,#4f46e5 30%,#a855f7 50%,#d97706 70%,transparent);opacity:.65;}',
+    'html body .footer__copy,html body .footer__stack{color:#6366a0!important;}',
+    'html body .footer__stack i{color:#e11d48!important;}',
+    'html body .footer__socials a{color:#35366a!important;}',
+    'html body .footer__socials a:hover{color:#4f46e5!important;}',
+
+    /* FLOAT */
+    'html body .float-btn--top{background:rgba(255,255,255,.88)!important;backdrop-filter:blur(18px)!important;border:1px solid rgba(79,70,229,.18)!important;color:#35366a!important;box-shadow:0 4px 24px rgba(79,70,229,.12)!important;}',
+    'html body .float-btn--top:hover{color:#4f46e5!important;}',
+    'html body #scrollRing circle{stroke:#d97706!important;}',
+    'html body .float-btn--theme{background:linear-gradient(135deg,#f59e0b,#d97706)!important;box-shadow:0 4px 24px rgba(245,158,11,.36)!important;}',
+
+    /* TOGGLE */
+    'html body .theme-toggle__track{background:linear-gradient(135deg,#fef3c7,#fde68a)!important;border-color:rgba(217,119,6,.28)!important;}',
+    'html body .theme-toggle__thumb{transform:translateX(24px)!important;background:linear-gradient(135deg,#f59e0b,#d97706)!important;box-shadow:0 2px 12px rgba(245,158,11,.55)!important;}',
+    'html body .theme-icon--dark{opacity:0!important;}',
+    'html body .theme-icon--light{opacity:1!important;}',
+
+    /* AVATAR */
+    'html body .avatar-3d-card{background:linear-gradient(135deg,rgba(255,255,255,.82),rgba(238,232,255,.76),rgba(254,249,230,.78))!important;backdrop-filter:blur(28px) saturate(1.8)!important;-webkit-backdrop-filter:blur(28px) saturate(1.8)!important;border:1px solid rgba(79,70,229,.18)!important;box-shadow:0 32px 80px rgba(79,70,229,.14),0 0 0 1px rgba(255,255,255,.55) inset!important;}',
+    'html body .avatar-3d-badge{background:rgba(255,255,255,.84)!important;backdrop-filter:blur(12px)!important;color:#0a0a20!important;border:1px solid rgba(79,70,229,.2)!important;}',
+    'html body .avatar-3d-hint{color:#9498c5!important;}',
+
+    /* GITHUB */
+    'html body .github-event,html body .github-repo,html body .github-contrib-embed{background:rgba(255,255,255,.65)!important;backdrop-filter:blur(14px)!important;border-color:rgba(79,70,229,.12)!important;}',
+    'html body .github-event:hover,html body .github-repo:hover{background:rgba(255,255,255,.88)!important;border-color:rgba(79,70,229,.26)!important;}',
+    'html body .github-event__repo,html body .github-repo__name{color:#4f46e5!important;}',
+    'html body .github-event__msg,html body .github-repo__desc{color:#1e1f40!important;}',
+    'html body .github-event__date,html body .github-repo__stat,html body .github-loading{color:#6366a0!important;}',
+    'html body .github-event__icon{background:rgba(79,70,229,.1)!important;color:#4f46e5!important;}',
+    'html body .lang-btn--active{background:rgba(79,70,229,.09)!important;border-color:rgba(79,70,229,.28)!important;}',
+
+    /* GEOMETRIC BOX ANIMATION */
+    '.lm-box{position:fixed;pointer-events:none;border-style:solid;opacity:0;',
+    'animation:lmBoxIn .7s ease forwards,lmBoxFloat var(--dur,14s) ease-in-out var(--dly,0s) infinite;}',
+    '@keyframes lmBoxIn{from{opacity:0;transform:scale(.6) rotate(var(--rot,0deg))}',
+    'to{opacity:var(--op,.12);transform:scale(1) rotate(var(--rot,0deg))}}',
+    '@keyframes lmBoxFloat{',
+    '0%,100%{transform:rotate(var(--rot,0deg)) translateY(0) translateX(0)}',
+    '33%{transform:rotate(calc(var(--rot,0deg) + 3deg)) translateY(var(--dy,-15px)) translateX(5px)}',
+    '66%{transform:rotate(calc(var(--rot,0deg) - 2deg)) translateY(calc(var(--dy,-15px)*.5)) translateX(-4px)}}',
+
+    /* TRANSITIONS */
+    'html body *,html body *::before,html body *::after{',
+    'transition:background-color .35s ease,border-color .28s ease,color .22s ease,box-shadow .35s ease,backdrop-filter .35s ease!important;}',
+    'html body .ficon,html body canvas,html body img,html body video,',
+    'html body .btn--primary,html body .avatar-3d-card,html body .lm-box{transition:none!important;}'
+  ].join('');
+}
+
+var SHAPES = [
+  {w:260,h:260,t:'5%',  l:'1%',  rot:'15deg', op:.1,  dur:'16s',dly:'0s',   dy:'-22px',c:'rgba(79,70,229,.28)',  bw:'2px',   br:'2rem'},
+  {w:180,h:180,t:'68%', l:'0%',  rot:'-12deg',op:.08, dur:'20s',dly:'1.5s', dy:'-16px',c:'rgba(217,119,6,.35)',  bw:'2px',   br:'1.5rem'},
+  {w:300,h:300,t:'3%',  l:'85%', rot:'22deg', op:.08, dur:'13s',dly:'2s',   dy:'-24px',c:'rgba(79,70,229,.2)',   bw:'1.5px', br:'2.5rem'},
+  {w:120,h:120,t:'50%', l:'91%', rot:'-22deg',op:.12, dur:'18s',dly:'3s',   dy:'-12px',c:'rgba(217,119,6,.42)', bw:'2px',   br:'1rem'},
+  {w:160,h:160,t:'35%', l:'88%', rot:'8deg',  op:.09, dur:'15s',dly:'4s',   dy:'-18px',c:'rgba(168,85,247,.3)', bw:'1.5px', br:'1.25rem'},
+  {w:90, h:90, t:'80%', l:'85%', rot:'35deg', op:.14, dur:'22s',dly:'5s',   dy:'-10px',c:'rgba(79,70,229,.4)',  bw:'2px',   br:'.8rem'},
+  {w:200,h:200,t:'60%', l:'3%',  rot:'-18deg',op:.07, dur:'17s',dly:'6s',   dy:'-20px',c:'rgba(99,102,241,.22)',bw:'1.5px', br:'1.75rem'},
+  {w:60, h:60, t:'25%', l:'95%', rot:'45deg', op:.18, dur:'10s',dly:'7s',   dy:'-8px', c:'rgba(217,119,6,.55)', bw:'2.5px', br:'.6rem'},
+  {w:80, h:80, t:'88%', l:'48%', rot:'20deg', op:.1,  dur:'14s',dly:'2.5s', dy:'-10px',c:'rgba(79,70,229,.35)', bw:'2px',   br:'.75rem'},
+  {w:100,h:100,t:'18%', l:'2%',  rot:'-30deg',op:.09, dur:'19s',dly:'8s',   dy:'-14px',c:'rgba(168,85,247,.28)',bw:'1.5px', br:'1rem'},
+  {w:50, h:50, t:'45%', l:'0%',  rot:'60deg', op:.2,  dur:'12s',dly:'9s',   dy:'-6px', c:'rgba(217,119,6,.6)',  bw:'3px',   br:'.5rem'},
+  {w:140,h:140,t:'92%', l:'68%', rot:'-8deg', op:.08, dur:'21s',dly:'3.5s', dy:'-16px',c:'rgba(79,70,229,.25)', bw:'1.5px', br:'1.2rem'},
+];
+
+function _createBoxes() {
+  _removeBoxes();
+  SHAPES.forEach(function(s, i) {
+    var el = document.createElement('div');
+    el.className = 'lm-box';
+    el.id = 'lmb' + i;
+    el.style.cssText =
+      'width:'+s.w+'px;height:'+s.h+'px;' +
+      'top:'+s.t+';left:'+s.l+';' +
+      'border-color:'+s.c+';border-width:'+s.bw+';' +
+      'border-radius:'+s.br+';' +
+      '--rot:'+s.rot+';--op:'+s.op+';' +
+      '--dur:'+s.dur+';--dly:'+s.dly+';' +
+      '--dy:'+s.dy+';' +
+      'z-index:0;';
+    document.body.appendChild(el);
+  });
+}
+
+function _removeBoxes() {
+  document.querySelectorAll('.lm-box').forEach(function(el){ el.remove(); });
+}
+
+function _inject() {
+  if (_lmStyle) return;
+  var s = document.createElement('style');
+  s.id = 'lm-css';
+  s.textContent = buildLightCSS();
+  document.head.appendChild(s);
+  _lmStyle = s;
+  var obs = new MutationObserver(function() {
+    if (!document.getElementById('lm-css') && document.documentElement.classList.contains('light-mode')) {
+      _lmStyle = null; _inject();
+    }
+  });
+  obs.observe(document.head, { childList: true });
+  setTimeout(_createBoxes, 120);
+}
+
+function _remove() {
+  if (_lmStyle) { _lmStyle.remove(); _lmStyle = null; }
+  _removeBoxes();
+}
+
+function _updateUI(theme) {
+  var icon = document.getElementById('themeFloatIcon');
+  var fb   = document.getElementById('themeToggleFloat');
+  if (theme === 'light') {
+    if (icon) icon.className = 'fas fa-moon';
+    if (fb) fb.title = 'Dark Mode';
+  } else {
+    if (icon) icon.className = 'fas fa-sun';
+    if (fb) fb.title = 'Light Mode';
+  }
+}
+
+window.toggleTheme = function() {
+  var isLight = document.documentElement.classList.contains('light-mode');
+  var next = isLight ? 'dark' : 'light';
+  if (next === 'light') { document.documentElement.classList.add('light-mode'); _inject(); }
+  else { document.documentElement.classList.remove('light-mode'); _remove(); }
+  _updateUI(next);
+  localStorage.setItem('portfolioTheme', next);
+  var ov = document.createElement('div');
+  ov.style.cssText = 'position:fixed;inset:0;z-index:99999;pointer-events:none;background:' +
+    (next==='light'?'rgba(238,232,255,.65)':'rgba(4,4,15,.6)') + ';transition:opacity .55s ease;';
+  document.body.appendChild(ov);
+  setTimeout(function(){ ov.style.opacity='0'; }, 60);
+  setTimeout(function(){ ov.remove(); }, 680);
+  if (window.gsap) {
+    var nb = document.getElementById('themeToggleNav');
+    var fb = document.getElementById('themeToggleFloat');
+    if (nb) gsap.fromTo(nb,{scale:.75,rotate:-25},{scale:1,rotate:0,duration:.55,ease:'back.out(2.8)'});
+    if (fb) gsap.fromTo(fb,{scale:.7,rotate:200},{scale:1,rotate:0,duration:.6,ease:'back.out(2.5)'});
+  }
+};
+
+(function(){
+  var saved = localStorage.getItem('portfolioTheme') || 'dark';
+  if (saved === 'light') {
+    document.documentElement.classList.add('light-mode');
+    if (document.head) { _inject(); }
+    else { document.addEventListener('DOMContentLoaded', _inject); }
+    document.addEventListener('DOMContentLoaded', function(){ _updateUI('light'); });
+  }
+})();
+
+})();
+</script>
+
+
+<!-- GSAP CDN -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollToPlugin.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/TextPlugin.min.js"></script>
+
+<!-- ═══════════════════ NAVIGATION ═══════════════════ -->
 <nav class="nav" id="mainNav">
   <div class="nav__inner">
-    <a href="{{ url_for('index') }}" class="nav__logo">
+    <a href="{{ url_for('index') }}" class="nav__logo" id="navLogo">
       <span class="nav__logo-dot"></span>
       <span>{{ site_settings.owner_name.split()[0] | upper }}</span>
     </a>
     <ul class="nav__links">
-      <li><a href="#about" class="nav__link">About</a></li>
-      <li><a href="#skills" class="nav__link">Skills</a></li>
-      <li><a href="#experience" class="nav__link">Experience</a></li>
+      <li><a href="#about"    class="nav__link">About</a></li>
+      <li><a href="#skills"   class="nav__link">Skills</a></li>
       <li><a href="#projects" class="nav__link">Projects</a></li>
-      <li><a href="#education" class="nav__link">Education</a></li>
-      <li><a href="#contact" class="nav__link">Contact</a></li>
+      <li><a href="{{ url_for('blog') }}" class="nav__link">Blog</a></li>
+      <li><a href="#contact"  class="nav__link">Contact</a></li>
     </ul>
     <div class="nav__actions">
+      <div class="lang-switcher">
+        <a href="{{ url_for('set_language', code='id') }}"
+           class="lang-btn {% if current_lang == 'id' %}lang-btn--active{% endif %}" title="Bahasa Indonesia">🇮🇩</a>
+        <a href="{{ url_for('set_language', code='en') }}"
+           class="lang-btn {% if current_lang == 'en' %}lang-btn--active{% endif %}" title="English">🇬🇧</a>
+      </div>
+      <!-- Theme Toggle Desktop -->
+      <button class="theme-toggle" id="themeToggleNav" onclick="toggleTheme()" title="Toggle Dark/Light Mode" aria-label="Toggle theme">
+        <span class="theme-toggle__track">
+          <span class="theme-toggle__thumb">
+            <i class="fas fa-moon theme-icon theme-icon--dark"></i>
+            <i class="fas fa-sun theme-icon theme-icon--light"></i>
+          </span>
+        </span>
+      </button>
       <a href="{{ url_for('auth_login') }}" class="btn btn--ghost btn--sm">
         <i class="fas fa-lock"></i> Admin
       </a>
@@ -29,83 +423,81 @@
       </button>
     </div>
   </div>
+  <div class="nav__progress" id="navProgress"></div>
 </nav>
 
-<!-- Mobile Drawer -->
 <div class="nav__drawer" id="navDrawer">
   <a href="#about">About</a>
   <a href="#skills">Skills</a>
-  <a href="#experience">Experience</a>
   <a href="#projects">Projects</a>
   <a href="#education">Education</a>
+  <a href="{{ url_for('blog') }}">Blog</a>
   <a href="#contact">Contact</a>
 </div>
 <div class="nav__backdrop" id="navBackdrop"></div>
 
-<!-- ═══════════════════════════════════════════
-     HERO
-═══════════════════════════════════════════ -->
+<!-- ═══════════════════ HERO ═══════════════════ -->
 <section class="hero" id="hero">
-  <div class="hero__grid-bg" aria-hidden="true"></div>
+  <div class="hero__grid-bg"  aria-hidden="true"></div>
   <div class="hero__glow hero__glow--1" aria-hidden="true"></div>
   <div class="hero__glow hero__glow--2" aria-hidden="true"></div>
 
-  <!-- ── Floating Tech Icons ──────────────── -->
+  <!-- Floating Tech Icons -->
   <div class="hero__floating-icons" aria-hidden="true" id="heroFloatingIcons">
-    <!-- Row 1 - right cluster -->
     <span class="ficon ficon--1"  style="--delay:0s;   --x:72%; --y:14%; --size:2.6rem; --color:#61dafb; --dur:14s;"><i class="devicon-react-original"></i></span>
     <span class="ficon ficon--2"  style="--delay:.8s;  --x:82%; --y:28%; --size:2.1rem; --color:#f7df1e; --dur:16s;"><i class="devicon-javascript-plain"></i></span>
     <span class="ficon ficon--3"  style="--delay:1.4s; --x:88%; --y:52%; --size:1.9rem; --color:#3776ab; --dur:12s;"><i class="devicon-python-plain"></i></span>
     <span class="ficon ficon--4"  style="--delay:2s;   --x:76%; --y:68%; --size:2.3rem; --color:#2496ed; --dur:18s;"><i class="devicon-docker-plain"></i></span>
     <span class="ficon ficon--5"  style="--delay:.4s;  --x:63%; --y:82%; --size:1.8rem; --color:#336791; --dur:15s;"><i class="devicon-postgresql-plain"></i></span>
-    <!-- Row 2 - left cluster -->
     <span class="ficon ficon--6"  style="--delay:1s;   --x:5%;  --y:22%; --size:2rem;   --color:#e34f26; --dur:17s;"><i class="devicon-html5-plain"></i></span>
     <span class="ficon ficon--7"  style="--delay:2.5s; --x:10%; --y:48%; --size:1.7rem; --color:#dc382d; --dur:13s;"><i class="devicon-redis-plain"></i></span>
     <span class="ficon ficon--8"  style="--delay:.2s;  --x:4%;  --y:72%; --size:2.2rem; --color:#ff9900; --dur:19s;"><i class="devicon-amazonwebservices-original"></i></span>
     <span class="ficon ficon--9"  style="--delay:3s;   --x:16%; --y:85%; --size:1.8rem; --color:#f05032; --dur:14s;"><i class="devicon-git-plain"></i></span>
-    <!-- Row 3 - top scatter -->
     <span class="ficon ficon--10" style="--delay:1.8s; --x:42%; --y:8%;  --size:1.6rem; --color:#06b6d4; --dur:20s;"><i class="devicon-tailwindcss-plain"></i></span>
-    <span class="ficon ficon--11" style="--delay:3.5s; --x:55%; --y:16%; --size:2rem;   --color:#000;    --dur:16s;"><i class="devicon-flask-original" style="color:#a78bfa;"></i></span>
+    <span class="ficon ficon--11" style="--delay:3.5s; --x:55%; --y:16%; --size:2rem;   --color:#a78bfa; --dur:16s;"><i class="devicon-flask-original" style="color:#a78bfa;"></i></span>
     <span class="ficon ficon--12" style="--delay:2.2s; --x:30%; --y:78%; --size:1.7rem; --color:#326ce5; --dur:15s;"><i class="devicon-kubernetes-plain"></i></span>
-    <!-- Geometric HUD brackets (kept) -->
     <svg class="hud-hex" style="top:10%;right:6%;width:260px;animation:rotateGlow 28s linear infinite;" viewBox="0 0 200 200" fill="none">
       <polygon points="100,10 180,55 180,145 100,190 20,145 20,55" stroke="#8b5cf6" stroke-width="1" opacity=".15"/>
-      <polygon points="100,35 155,67 155,133 100,165 45,133 45,67"  stroke="#00f5ff" stroke-width=".6" opacity=".1"/>
+      <polygon points="100,35 155,67 155,133 100,165 45,133 45,67" stroke="#00f5ff" stroke-width=".6" opacity=".1"/>
     </svg>
-    <svg class="hud-corner" style="top:13%;right:4%;" viewBox="0 0 60 60" fill="none"><path d="M60,0 L60,22 M60,0 L38,0" stroke="#00f5ff" stroke-width="1.5" opacity=".35"/></svg>
-    <svg class="hud-corner" style="bottom:22%;left:2%;" viewBox="0 0 60 60" fill="none"><path d="M0,60 L0,38 M0,60 L22,60" stroke="#8b5cf6" stroke-width="1.5" opacity=".25"/></svg>
-    <svg style="position:absolute;bottom:32%;right:14%;width:120px;opacity:.06;animation:rotateGlow 50s linear infinite reverse;" viewBox="0 0 120 120" fill="none">
-      <circle cx="60" cy="60" r="55" stroke="#a78bfa" stroke-width="1" stroke-dasharray="3 7"/>
+    <svg class="hud-corner" style="top:13%;right:4%;" viewBox="0 0 60 60" fill="none">
+      <path d="M60,0 L60,22 M60,0 L38,0" stroke="#00f5ff" stroke-width="1.5" opacity=".35"/>
     </svg>
-    <div style="position:absolute;top:38%;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,rgba(0,245,255,.07),transparent);"></div>
-    <div style="position:absolute;top:62%;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,rgba(139,92,246,.05),transparent);"></div>
+    <svg class="hud-corner" style="bottom:22%;left:2%;" viewBox="0 0 60 60" fill="none">
+      <path d="M0,60 L0,38 M0,60 L22,60" stroke="#8b5cf6" stroke-width="1.5" opacity=".25"/>
+    </svg>
   </div>
 
+  <!-- Hero Content -->
   <div class="hero__content container">
-    <div class="hero__badge">
+    <div class="hero__badge hero__badge--{{ site_settings.get('availability_status','available') }}" id="heroBadge">
       <span class="hero__badge-dot"></span>
-      Available for opportunities
+      {{ site_settings.get('availability_msg','Available for opportunities') }}
     </div>
     <h1 class="hero__name">
-      <span class="hero__name-line">Hi, I'm</span>
-      <span class="hero__name-main">{{ site_settings.owner_name }}</span>
+      <span class="hero__name-line" id="heroGreeting">Hi, I'm</span>
+      <span class="hero__name-main" id="heroName">{{ site_settings.owner_name }}</span>
     </h1>
-    <p class="hero__title">{{ site_settings.owner_title }}</p>
-    <p class="hero__sub">
+    <p class="hero__title" id="heroTitle">{{ site_settings.owner_title }}</p>
+    <p class="hero__sub" id="heroSub">
       Building enterprise-grade digital products with modern architecture,
       clean code, and obsessive attention to performance.
     </p>
-
-    <div class="hero__cta">
+    <div class="hero__cta" id="heroCta">
       <a href="#projects" class="btn btn--primary btn--lg">
         <i class="fas fa-rocket"></i> View Projects
       </a>
       <a href="#contact" class="btn btn--outline btn--lg">
         <i class="fas fa-paper-plane"></i> Contact Me
       </a>
+      <a href="{{ url_for('static', filename='uploads/cv/leo-nardi-cv.pdf') }}"
+         download="Leo_Nardi_CV.pdf" class="btn btn--cv btn--lg" id="downloadCvBtn">
+        <i class="fas fa-download"></i>
+        <span>Download CV</span>
+        <span class="btn__cv-badge">PDF</span>
+      </a>
     </div>
-
-    <div class="hero__stats">
+    <div class="hero__stats" id="heroStats">
       <div class="hero__stat">
         <span class="hero__stat-num" data-count="{{ projects|length + 10 }}">0</span>
         <span class="hero__stat-label">Projects</span>
@@ -125,31 +517,59 @@
     </div>
   </div>
 
-  <div class="hero__scroll-hint">
+  <div class="hero__scroll-hint" id="heroScroll">
     <span>Scroll</span>
     <div class="hero__scroll-line"></div>
   </div>
 </section>
 
-<!-- ═══════════════════════════════════════════
-     ABOUT
-═══════════════════════════════════════════ -->
-<section class="section" id="about">
+<!-- ═══════════════════ ABOUT ═══════════════════ -->
+<section class="section gs-section" id="about">
   <div class="container">
     <div class="section__header">
-      <span class="section__label">01 / About</span>
-      <h2 class="section__title">Who I Am</h2>
+      <span class="section__label gs-label">01 / About</span>
+      <h2 class="section__title gs-title">Who I Am</h2>
     </div>
     <div class="about__grid">
-      <div class="about__avatar-wrap">
-        {% if site_settings.owner_avatar %}
-        <img src="{{ url_for('static', filename=site_settings.owner_avatar) }}" alt="{{ site_settings.owner_name }}" class="about__avatar"/>
-        {% else %}
-        <div class="about__avatar-placeholder">
-          <i class="fas fa-user"></i>
+      <div class="about__avatar-wrap gs-avatar">
+        <!-- 3D Interactive Profile Card -->
+        <div class="avatar-3d-scene" id="avatar3dScene">
+          <div class="avatar-3d-card" id="avatar3dCard">
+            <!-- Glow orbs -->
+            <div class="avatar-3d-orb avatar-3d-orb--1"></div>
+            <div class="avatar-3d-orb avatar-3d-orb--2"></div>
+            <!-- Hologram ring -->
+            <div class="avatar-3d-ring"></div>
+            <!-- Photo -->
+            <div class="avatar-3d-photo">
+              {% if site_settings.owner_avatar %}
+              <img src="{{ url_for('static', filename=site_settings.owner_avatar) }}"
+                   alt="{{ site_settings.owner_name }}"/>
+              {% else %}
+              <div class="avatar-3d-fallback"><i class="fas fa-user"></i></div>
+              {% endif %}
+              <!-- Scanline overlay -->
+              <div class="avatar-3d-scanlines"></div>
+              <!-- Corner brackets -->
+              <svg class="avatar-3d-corner avatar-3d-corner--tl" viewBox="0 0 30 30"><path d="M28,2 L2,2 L2,28" stroke="var(--cyan)" stroke-width="2" fill="none"/></svg>
+              <svg class="avatar-3d-corner avatar-3d-corner--tr" viewBox="0 0 30 30"><path d="M2,2 L28,2 L28,28" stroke="var(--plasma)" stroke-width="2" fill="none"/></svg>
+              <svg class="avatar-3d-corner avatar-3d-corner--bl" viewBox="0 0 30 30"><path d="M28,28 L2,28 L2,2" stroke="var(--plasma)" stroke-width="2" fill="none"/></svg>
+              <svg class="avatar-3d-corner avatar-3d-corner--br" viewBox="0 0 30 30"><path d="M2,28 L28,28 L28,2" stroke="var(--cyan)" stroke-width="2" fill="none"/></svg>
+            </div>
+            <!-- Name badge -->
+            <div class="avatar-3d-badge">
+              <span class="avatar-3d-badge-dot"></span>
+              <span>{{ site_settings.owner_name }}</span>
+            </div>
+            <!-- Shine layer -->
+            <div class="avatar-3d-shine" id="avatar3dShine"></div>
+          </div>
+          <!-- Hint -->
+          <p class="avatar-3d-hint">
+            <i class="fas fa-hand-pointer"></i> Drag to rotate
+          </p>
         </div>
-        {% endif %}
-        <div class="about__card">
+        <div class="about__card gs-card">
           <div class="about__card-item"><i class="fas fa-map-marker-alt"></i> {{ site_settings.owner_location }}</div>
           <div class="about__card-item"><i class="fas fa-envelope"></i> {{ site_settings.owner_email }}</div>
           <div class="about__card-item"><i class="fas fa-phone"></i> {{ site_settings.owner_phone }}</div>
@@ -161,59 +581,50 @@
           {% if site_settings.tiktok_url %}<a href="{{ site_settings.tiktok_url }}" target="_blank" class="about__social" title="TikTok"><i class="fab fa-tiktok"></i></a>{% endif %}
           {% if site_settings.upwork_url %}<a href="{{ site_settings.upwork_url }}" target="_blank" class="about__social" title="Upwork"><i class="fas fa-briefcase"></i></a>{% endif %}
           {% if site_settings.lynk_url %}<a href="{{ site_settings.lynk_url }}" target="_blank" class="about__social" title="Lynk.id"><i class="fas fa-link"></i></a>{% endif %}
-          {% if site_settings.twitter_url %}<a href="{{ site_settings.twitter_url }}" target="_blank" class="about__social" title="Twitter"><i class="fab fa-twitter"></i></a>{% endif %}
         </div>
       </div>
-      <div class="about__text">
+      <div class="about__text gs-text">
         <p class="about__lead">
           A passionate <strong>{{ site_settings.owner_title }}</strong> with a strong foundation in building
           scalable, secure, and high-performance applications for enterprise environments.
         </p>
-        <p>
-          I specialize in designing robust backend systems, intuitive frontends, and cloud-native
-          infrastructure. My work combines technical depth with product thinking to deliver solutions
-          that genuinely move the needle.
-        </p>
-        <p>
-          When I'm not coding, I contribute to open-source projects, mentor junior developers,
-          and explore emerging tech trends in AI/ML and distributed systems.
-        </p>
+        <p>I specialize in designing robust backend systems, intuitive frontends, and cloud-native
+          infrastructure. My work combines technical depth with product thinking.</p>
+        <p>When I'm not coding, I contribute to open-source projects, mentor junior developers,
+          and explore emerging tech trends in AI/ML and distributed systems.</p>
         <div class="about__tags">
-          <span class="tag">Problem Solver</span>
-          <span class="tag">Team Player</span>
-          <span class="tag">Clean Code Advocate</span>
-          <span class="tag">Agile / Scrum</span>
-          <span class="tag">Open Source Contributor</span>
+          <span class="tag gs-tag">Problem Solver</span>
+          <span class="tag gs-tag">Team Player</span>
+          <span class="tag gs-tag">Clean Code Advocate</span>
+          <span class="tag gs-tag">Agile / Scrum</span>
+          <span class="tag gs-tag">Open Source Contributor</span>
         </div>
       </div>
     </div>
   </div>
 </section>
 
-<!-- ═══════════════════════════════════════════
-     SKILLS
-═══════════════════════════════════════════ -->
-<section class="section section--dark" id="skills">
+<!-- ═══════════════════ SKILLS ═══════════════════ -->
+<section class="section section--dark gs-section" id="skills">
   <div class="container">
     <div class="section__header">
-      <span class="section__label">02 / Skills</span>
-      <h2 class="section__title">Technical Expertise</h2>
+      <span class="section__label gs-label">02 / Skills</span>
+      <h2 class="section__title gs-title">Technical Expertise</h2>
     </div>
-
     {% set categories = skills | map(attribute='category') | unique | list %}
-    <div class="skills__tabs">
+    <div class="skills__tabs gs-fade">
       <button class="skills__tab skills__tab--active" data-filter="all">All</button>
       {% for cat in categories %}
       <button class="skills__tab" data-filter="{{ cat }}">{{ cat }}</button>
       {% endfor %}
     </div>
-
     <div class="skills__grid" id="skillsGrid">
       {% for skill in skills %}
-      <div class="skill-card" data-category="{{ skill.category }}">
+      {%- set resolved = auto_icon(skill.name, skill.icon) | trim -%}
+      <div class="skill-card gs-skill" data-category="{{ skill.category }}" data-index="{{ loop.index0 }}">
         <div class="skill-card__icon-wrap">
           <div class="skill-card__icon-bg"></div>
-          <i class="{{ skill.icon }} skill-card__icon"></i>
+          <i class="{{ resolved }} skill-card__icon"></i>
         </div>
         <div class="skill-card__info">
           <span class="skill-card__name">{{ skill.name }}</span>
@@ -231,92 +642,34 @@
   </div>
 </section>
 
-<!-- ═══════════════════════════════════════════
-     EXPERIENCE
-═══════════════════════════════════════════ -->
-<section class="section" id="experience">
+<!-- ═══════════════════ PROJECTS ═══════════════════ -->
+<section class="section section--dark gs-section" id="projects">
   <div class="container">
     <div class="section__header">
-      <span class="section__label">03 / Experience</span>
-      <h2 class="section__title">Work History</h2>
-    </div>
-    <div class="timeline">
-      {% for exp in experiences %}
-      <div class="timeline__item reveal">
-        <div class="timeline__dot {% if exp.is_current %}timeline__dot--active{% endif %}"></div>
-        <div class="timeline__card">
-          <div class="timeline__header">
-            <div>
-              <h3 class="timeline__role">{{ exp.role }}</h3>
-              <p class="timeline__company">
-                <i class="fas fa-building"></i> {{ exp.company }}
-                {% if exp.location %} &nbsp;·&nbsp; <i class="fas fa-map-marker-alt"></i> {{ exp.location }}{% endif %}
-              </p>
-            </div>
-            <span class="timeline__period">
-              {{ exp.start_date }}
-              {% if exp.is_current %}<span class="badge badge--green">Current</span>
-              {% elif exp.end_date %} — {{ exp.end_date }}{% endif %}
-            </span>
-          </div>
-          {% if exp.description %}
-          <p class="timeline__desc">{{ exp.description }}</p>
-          {% endif %}
-        </div>
-      </div>
-      {% else %}
-      <p class="empty-state">Belum ada pengalaman kerja yang ditambahkan.</p>
-      {% endfor %}
-    </div>
-  </div>
-</section>
-
-<!-- ═══════════════════════════════════════════
-     PROJECTS
-═══════════════════════════════════════════ -->
-<section class="section section--dark" id="projects">
-  <div class="container">
-    <div class="section__header">
-      <span class="section__label">04 / Projects</span>
-      <h2 class="section__title">Featured Work</h2>
+      <span class="section__label gs-label">03 / Projects</span>
+      <h2 class="section__title gs-title">Featured Work</h2>
       <a href="{{ url_for('projects') }}" class="section__link">
         View All <i class="fas fa-arrow-right"></i>
       </a>
     </div>
-    <div class="projects__grid">
+    <div class="projects__grid" id="projectsGrid">
       {% for project in projects %}
-      <div class="project-card reveal">
+      <div class="project-card gs-project" data-index="{{ loop.index0 }}">
         <div class="project-card__img">
           {% if project.image_url %}
           <img src="{{ url_for('static', filename=project.image_url) }}" alt="{{ project.title }}" loading="lazy"/>
           {% else %}
-          <div class="project-card__img-placeholder">
-            <i class="fas fa-code"></i>
-          </div>
+          <div class="project-card__img-placeholder"><i class="fas fa-code"></i></div>
           {% endif %}
           <div class="project-card__overlay">
-            {% if project.demo_url %}
-            <a href="{{ project.demo_url }}" target="_blank" class="project-card__action">
-              <i class="fas fa-external-link-alt"></i>
-            </a>
-            {% endif %}
-            {% if project.github_url %}
-            <a href="{{ project.github_url }}" target="_blank" class="project-card__action">
-              <i class="fab fa-github"></i>
-            </a>
-            {% endif %}
-            <a href="{{ url_for('project_detail', project_id=project.id) }}" class="project-card__action">
-              <i class="fas fa-eye"></i>
-            </a>
+            {% if project.demo_url %}<a href="{{ project.demo_url }}" target="_blank" class="project-card__action"><i class="fas fa-external-link-alt"></i></a>{% endif %}
+            {% if project.github_url %}<a href="{{ project.github_url }}" target="_blank" class="project-card__action"><i class="fab fa-github"></i></a>{% endif %}
+            <a href="{{ url_for('project_detail', project_id=project.id) }}" class="project-card__action"><i class="fas fa-eye"></i></a>
           </div>
         </div>
         <div class="project-card__body">
-          {% if project.is_featured %}
-          <span class="badge badge--accent">Featured</span>
-          {% endif %}
-          {% if project.category %}
-          <span class="badge badge--outline">{{ project.category }}</span>
-          {% endif %}
+          {% if project.is_featured %}<span class="badge badge--accent">Featured</span>{% endif %}
+          {% if project.category %}<span class="badge badge--outline">{{ project.category }}</span>{% endif %}
           <h3 class="project-card__title">{{ project.title }}</h3>
           <p class="project-card__desc">{{ project.short_desc or project.description | truncate(120) }}</p>
           <div class="project-card__stack">
@@ -333,39 +686,34 @@
   </div>
 </section>
 
-<!-- ═══════════════════════════════════════════
-     EDUCATION & CERTIFICATES
-═══════════════════════════════════════════ -->
-<section class="section" id="education">
+<!-- ═══════════════════ EDUCATION ═══════════════════ -->
+<section class="section gs-section" id="education">
   <div class="container">
     <div class="section__header">
-      <span class="section__label">05 / Education & Credentials</span>
-      <h2 class="section__title">Academic & Certifications</h2>
+      <span class="section__label gs-label">04 / Education & Credentials</span>
+      <h2 class="section__title gs-title">Academic & Certifications</h2>
     </div>
     <div class="edu-cert__grid">
-      <!-- Education -->
       <div>
-        <h3 class="subsection__title"><i class="fas fa-graduation-cap"></i> Education</h3>
+        <h3 class="subsection__title gs-sub"><i class="fas fa-graduation-cap"></i> Education</h3>
         {% for edu in educations %}
-        <div class="edu-card reveal">
+        <div class="edu-card gs-edu">
           <div class="edu-card__year">{{ edu.start_year }} – {{ edu.end_year or 'Present' }}</div>
           <div class="edu-card__body">
             <h4>{{ edu.degree }} {% if edu.field %}in {{ edu.field }}{% endif %}</h4>
             <p class="edu-card__inst">{{ edu.institution }}</p>
             {% if edu.gpa %}<span class="badge badge--outline">GPA: {{ edu.gpa }}</span>{% endif %}
-            {% if edu.description %}<p>{{ edu.description }}</p>{% endif %}
           </div>
         </div>
         {% else %}
         <p class="empty-state">Belum ada data pendidikan.</p>
         {% endfor %}
       </div>
-      <!-- Certificates -->
       <div>
-        <h3 class="subsection__title"><i class="fas fa-certificate"></i> Certificates</h3>
+        <h3 class="subsection__title gs-sub"><i class="fas fa-certificate"></i> Certificates</h3>
         <div class="cert__grid">
           {% for cert in certificates %}
-          <div class="cert-card reveal">
+          <div class="cert-card gs-cert">
             {% if cert.image_url %}
             <img src="{{ url_for('static', filename=cert.image_url) }}" alt="{{ cert.name }}" class="cert-card__img"/>
             {% else %}
@@ -374,12 +722,7 @@
             <div class="cert-card__body">
               <h4 class="cert-card__name">{{ cert.name }}</h4>
               <p class="cert-card__issuer">{{ cert.issuer }}</p>
-              {% if cert.issue_date %}<p class="cert-card__date">{{ cert.issue_date }}</p>{% endif %}
-              {% if cert.credential_url %}
-              <a href="{{ cert.credential_url }}" target="_blank" class="cert-card__link">
-                Verify <i class="fas fa-external-link-alt"></i>
-              </a>
-              {% endif %}
+              {% if cert.credential_url %}<a href="{{ cert.credential_url }}" target="_blank" class="cert-card__link">Verify <i class="fas fa-external-link-alt"></i></a>{% endif %}
             </div>
           </div>
           {% else %}
@@ -391,34 +734,122 @@
   </div>
 </section>
 
-<!-- ═══════════════════════════════════════════
-     CONTACT
-═══════════════════════════════════════════ -->
-<section class="section section--dark" id="contact">
+<!-- ═══════════════════ TESTIMONIALS ═══════════════════ -->
+<section class="section section--dark gs-section" id="testimonials">
   <div class="container">
     <div class="section__header">
-      <span class="section__label">06 / Contact</span>
-      <h2 class="section__title">Let's Work Together</h2>
+      <span class="section__label gs-label">05 / Testimonials</span>
+      <h2 class="section__title gs-title">Client Reviews</h2>
+    </div>
+    <div class="testimonials__grid" id="testimonialsGrid">
+      {% for t in testimonials %}
+      <div class="testi-card gs-testi" data-index="{{ loop.index0 }}">
+        <div class="testi-card__top">
+          <div class="testi-card__avatar-wrap">
+            {% if t.client_avatar %}<img src="{{ url_for('static', filename=t.client_avatar) }}" alt="{{ t.client_name }}" class="testi-card__avatar"/>
+            {% else %}<div class="testi-card__avatar-placeholder">{{ t.client_name[0]|upper }}</div>{% endif %}
+          </div>
+          <div class="testi-card__client">
+            <span class="testi-card__name">{{ t.client_name }}</span>
+            <span class="testi-card__title">{{ t.client_title }}{% if t.client_company %} · {{ t.client_company }}{% endif %}</span>
+          </div>
+          <div class="testi-card__stars">
+            {% for i in range(t.rating) %}<i class="fas fa-star"></i>{% endfor %}
+            {% for i in range(5 - t.rating) %}<i class="far fa-star"></i>{% endfor %}
+          </div>
+        </div>
+        <blockquote class="testi-card__quote">
+          <i class="fas fa-quote-left testi-card__quote-icon"></i>{{ t.content }}
+        </blockquote>
+        {% if t.project_name %}<div class="testi-card__project"><i class="fas fa-folder-open"></i> {{ t.project_name }}</div>{% endif %}
+      </div>
+      {% else %}
+      {% for t in [
+        {'name':'Ahmad Rizki','title':'CTO','company':'TechStartup ID','rating':5,'content':'Leo berhasil menyelesaikan proyek web app kami dalam waktu yang sangat cepat dengan kualitas kode yang luar biasa. Sangat profesional dan komunikatif!','project':'E-Commerce Platform'},
+        {'name':'Sarah Wijaya','title':'Product Manager','company':'Digital Agency','rating':5,'content':'Sangat puas dengan hasil kerja Leo. API yang dibangun sangat robust dan dokumentasinya lengkap. Pasti akan hire lagi untuk project berikutnya.','project':'REST API Development'},
+        {'name':'David Santoso','title':'Founder','company':'SaaS Startup','rating':5,'content':'Leo tidak hanya deliver code yang bagus, tapi juga memberikan insight teknis yang sangat berharga. Recommend 100%!','project':'Dashboard Analytics'},
+      ] %}
+      <div class="testi-card gs-testi" data-index="{{ loop.index0 }}">
+        <div class="testi-card__top">
+          <div class="testi-card__avatar-placeholder">{{ t.name[0] }}</div>
+          <div class="testi-card__client">
+            <span class="testi-card__name">{{ t.name }}</span>
+            <span class="testi-card__title">{{ t.title }} · {{ t.company }}</span>
+          </div>
+          <div class="testi-card__stars">{% for i in range(t.rating) %}<i class="fas fa-star"></i>{% endfor %}</div>
+        </div>
+        <blockquote class="testi-card__quote"><i class="fas fa-quote-left testi-card__quote-icon"></i>{{ t.content }}</blockquote>
+        <div class="testi-card__project"><i class="fas fa-folder-open"></i> {{ t.project }}</div>
+      </div>
+      {% endfor %}
+      {% endfor %}
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════ BLOG PREVIEW ═══════════════════ -->
+<section class="section gs-section" id="blog">
+  <div class="container">
+    <div class="section__header">
+      <span class="section__label gs-label">06 / Blog</span>
+      <h2 class="section__title gs-title">Latest Articles</h2>
+      <a href="{{ url_for('blog') }}" class="section__link">All Articles <i class="fas fa-arrow-right"></i></a>
+    </div>
+    {% if recent_posts %}
+    <div class="blog-preview-grid">
+      {% for post in recent_posts %}
+      <article class="blog-card gs-blog" data-index="{{ loop.index0 }}">
+        <a href="{{ url_for('blog_post', slug=post.slug) }}" class="blog-card__img-link">
+          {% if post.cover_image %}<img src="{{ url_for('static', filename=post.cover_image) }}" alt="{{ post.title }}" loading="lazy" class="blog-card__img"/>
+          {% else %}<div class="blog-card__img-placeholder"><i class="fas fa-newspaper"></i></div>{% endif %}
+          <div class="blog-card__img-overlay"><span class="blog-card__read-more"><i class="fas fa-arrow-right"></i></span></div>
+        </a>
+        <div class="blog-card__body">
+          <div class="blog-card__meta">
+            <span class="blog-cat blog-cat--sm">{{ post.category }}</span>
+            <span class="blog-meta-item mono"><i class="fas fa-clock"></i> {{ post.read_time }} min</span>
+          </div>
+          <h3 class="blog-card__title"><a href="{{ url_for('blog_post', slug=post.slug) }}">{{ post.title }}</a></h3>
+          <p class="blog-card__excerpt">{{ post.excerpt | truncate(110) }}</p>
+          <div class="blog-card__footer">
+            <span class="blog-card__date mono"><i class="fas fa-calendar-alt"></i> {{ (post.published_at or post.created_at)[:10] }}</span>
+          </div>
+        </div>
+      </article>
+      {% endfor %}
+    </div>
+    {% else %}
+    <div class="blog-preview-empty gs-fade">
+      <i class="fas fa-newspaper"></i>
+      <p>Artikel sedang dipersiapkan. Kembali lagi nanti!</p>
+    </div>
+    {% endif %}
+  </div>
+</section>
+
+<!-- ═══════════════════ CONTACT ═══════════════════ -->
+<section class="section section--dark gs-section" id="contact">
+  <div class="container">
+    <div class="section__header">
+      <span class="section__label gs-label">07 / Contact</span>
+      <h2 class="section__title gs-title">Let's Work Together</h2>
     </div>
     <div class="contact__grid">
-      <div class="contact__info">
-        <p class="contact__intro">
-          Have a project in mind or looking for an experienced engineer?
-          I'd love to hear from you.
-        </p>
+      <div class="contact__info gs-contact-info">
+        <p class="contact__intro">Have a project in mind? I'd love to hear from you.</p>
         <div class="contact__detail"><i class="fas fa-envelope"></i> {{ site_settings.owner_email }}</div>
         <div class="contact__detail"><i class="fas fa-phone"></i> {{ site_settings.owner_phone }}</div>
         <div class="contact__detail"><i class="fas fa-map-marker-alt"></i> {{ site_settings.owner_location }}</div>
         <div class="contact__socials">
-          {% if site_settings.github_url %}<a href="{{ site_settings.github_url }}" target="_blank" title="GitHub"><i class="fab fa-github"></i></a>{% endif %}
-          {% if site_settings.linkedin_url %}<a href="{{ site_settings.linkedin_url }}" target="_blank" title="LinkedIn"><i class="fab fa-linkedin"></i></a>{% endif %}
-          {% if site_settings.instagram_url %}<a href="{{ site_settings.instagram_url }}" target="_blank" title="Instagram"><i class="fab fa-instagram"></i></a>{% endif %}
-          {% if site_settings.tiktok_url %}<a href="{{ site_settings.tiktok_url }}" target="_blank" title="TikTok"><i class="fab fa-tiktok"></i></a>{% endif %}
-          {% if site_settings.upwork_url %}<a href="{{ site_settings.upwork_url }}" target="_blank" title="Upwork"><i class="fas fa-briefcase"></i></a>{% endif %}
-          {% if site_settings.lynk_url %}<a href="{{ site_settings.lynk_url }}" target="_blank" title="Lynk.id"><i class="fas fa-link"></i></a>{% endif %}
+          {% if site_settings.github_url %}<a href="{{ site_settings.github_url }}" target="_blank"><i class="fab fa-github"></i></a>{% endif %}
+          {% if site_settings.linkedin_url %}<a href="{{ site_settings.linkedin_url }}" target="_blank"><i class="fab fa-linkedin"></i></a>{% endif %}
+          {% if site_settings.instagram_url %}<a href="{{ site_settings.instagram_url }}" target="_blank"><i class="fab fa-instagram"></i></a>{% endif %}
+          {% if site_settings.tiktok_url %}<a href="{{ site_settings.tiktok_url }}" target="_blank"><i class="fab fa-tiktok"></i></a>{% endif %}
+          {% if site_settings.upwork_url %}<a href="{{ site_settings.upwork_url }}" target="_blank"><i class="fas fa-briefcase"></i></a>{% endif %}
+          {% if site_settings.lynk_url %}<a href="{{ site_settings.lynk_url }}" target="_blank"><i class="fas fa-link"></i></a>{% endif %}
         </div>
       </div>
-      <form class="contact__form" action="{{ url_for('contact') }}" method="POST">
+      <form class="contact__form gs-contact-form" action="{{ url_for('contact_send') }}" method="POST">
         <div class="form__row">
           <div class="form__group">
             <label class="form__label">Name *</label>
@@ -435,7 +866,7 @@
         </div>
         <div class="form__group">
           <label class="form__label">Message *</label>
-          <textarea name="message" class="form__input form__textarea" required placeholder="Describe your project or request..." rows="5"></textarea>
+          <textarea name="message" class="form__input form__textarea" required placeholder="Describe your project..." rows="5"></textarea>
         </div>
         <button type="submit" class="btn btn--primary btn--full">
           <i class="fas fa-paper-plane"></i> Send Message
@@ -445,7 +876,26 @@
   </div>
 </section>
 
-<!-- ── Footer ───────────────────────────────── -->
+<!-- ═══════════════════ FLOATING BUTTONS ═══════════════════ -->
+<!-- Floating Theme Toggle (Mobile) -->
+<button class="float-btn float-btn--theme" id="themeToggleFloat" onclick="toggleTheme()" title="Toggle Dark/Light Mode" aria-label="Toggle theme">
+  <i class="fas fa-moon" id="themeFloatIcon"></i>
+</button>
+
+<a href="https://wa.me/{{ site_settings.owner_phone | replace('+','') | replace(' ','') | replace('-','') }}?text=Halo%20Leo%2C%20saya%20tertarik%20dengan%20layanan%20Anda"
+   class="float-btn float-btn--wa" id="waFloat" target="_blank" rel="noopener" title="Chat WhatsApp">
+  <i class="fab fa-whatsapp"></i>
+  <span class="float-btn__tooltip">Chat WhatsApp</span>
+</a>
+<button class="float-btn float-btn--top" id="scrollTop" title="Kembali ke atas" aria-label="Scroll to top">
+  <i class="fas fa-chevron-up"></i>
+  <svg class="float-btn__ring" viewBox="0 0 50 50">
+    <circle cx="25" cy="25" r="22" fill="none" stroke="var(--plasma)" stroke-width="2"
+            stroke-dasharray="138" stroke-dashoffset="138" id="scrollRing"/>
+  </svg>
+</button>
+
+<!-- ═══════════════════ FOOTER ═══════════════════ -->
 <footer class="footer">
   <div class="container footer__inner">
     <span class="footer__copy">© {{ now.year }} {{ site_settings.owner_name }}. All rights reserved.</span>
@@ -463,43 +913,1680 @@
 
 {% endblock %}
 
+<!-- ═══════════════════ GSAP ANIMATIONS ═══════════════════ -->
 {% block extra_js %}
-<script>
-// Animate stat counters
-document.querySelectorAll('.hero__stat-num').forEach(el => {
-  const target = parseInt(el.dataset.count);
-  let count = 0;
-  const step = Math.ceil(target / 60);
-  const timer = setInterval(() => {
-    count = Math.min(count + step, target);
-    el.textContent = count.toLocaleString();
-    if (count >= target) clearInterval(timer);
-  }, 30);
-});
+<style>
+/* ══════════════════════════════════════════════
+   3D CINEMATIC SYSTEM — Initial States
+   Every element starts hidden/transformed
+   GSAP animates them into view per-section
+══════════════════════════════════════════════ */
 
-// Animate skill bars on scroll
-const observer = new IntersectionObserver((entries) => {
-  entries.forEach(e => {
-    if (e.isIntersecting) {
-      e.target.querySelectorAll('.skill-card__fill').forEach(bar => {
-        bar.style.width = bar.dataset.width;
+/* 3D perspective applied per-element via transformPerspective in GSAP */
+
+/* ── CRITICAL LAYOUT FIXES ── */
+html, body {
+  overflow-x: hidden;
+  max-width: 100%;
+}
+body {
+  /* NO perspective on body — causes whitespace below footer */
+  overflow-x: hidden;
+}
+footer.footer {
+  position: relative;
+  z-index: 1;
+  margin-bottom: 0 !important;
+}
+/* Prevent GSAP 3D transforms from creating scroll overflow */
+.gs-section {
+  overflow: hidden;
+}
+/* Float buttons fixed positioning */
+#scrollTop { position:fixed!important; bottom:1.5rem; right:1.5rem; }
+#waFloat   { position:fixed!important; bottom:5.5rem; right:1.5rem; }
+
+
+
+/* Nav */
+.nav__progress {
+  position:absolute; bottom:0; left:0; height:2px; width:0%;
+  background: linear-gradient(90deg, var(--violet), var(--plasma), var(--cyan));
+  box-shadow: 0 0 10px var(--plasma);
+}
+
+/* Section initial hidden states */
+.gs-label     { opacity:0; transform:translateY(-20px); }
+.gs-title     { opacity:0; transform:translateY(60px) skewX(-5deg); }
+.gs-avatar    { opacity:0; transform:translateX(-80px) rotateY(35deg) scale(.85); }
+.gs-text      { opacity:0; transform:translateX(80px) rotateY(-15deg); }
+.gs-card      { opacity:0; transform:translateY(30px) rotateX(20deg); }
+.gs-tag       { opacity:0; transform:scale(.4) rotateZ(-15deg); }
+.gs-skill     { opacity:0; transform:translateY(60px) rotateX(25deg) scale(.85); }
+.gs-project   { opacity:0; transform:translateY(80px) rotateX(18deg) scale(.88); }
+.gs-testi     { opacity:0; transform:translateY(50px) rotateX(15deg) rotateZ(2deg) scale(.92); }
+.gs-edu       { opacity:0; transform:translateX(-50px) rotateY(15deg); }
+.gs-cert      { opacity:0; transform:translateY(40px) rotateX(20deg) scale(.88); }
+.gs-sub       { opacity:0; transform:translateX(-30px); }
+.gs-contact-info { opacity:0; transform:translateX(-60px) rotateY(20deg); }
+.gs-contact-form { opacity:0; transform:translateX(60px) rotateY(-20deg); }
+.gs-blog      { opacity:0; transform:translateY(70px) rotateX(18deg) scale(.88); }
+.gs-fade      { opacity:0; transform:translateY(40px); }
+
+/* Float buttons hidden initially */
+#scrollTop, #waFloat { opacity:0; transform:translateY(30px); visibility:hidden; }
+
+/* 3D containers */
+#skillsGrid   { perspective:1200px; transform-style:preserve-3d; }
+#projectsGrid { perspective:1200px; transform-style:preserve-3d; }
+.skill-card, .project-card, .testi-card {
+  transform-style: preserve-3d;
+  will-change: transform;
+}
+
+/* Disable native smooth scroll — GSAP handles it */
+html { scroll-behavior: auto !important; }
+
+/* Section glow transition */
+.gs-section { transition: --section-accent .8s ease; }
+
+/* ── Section transition overlays ── */
+.section-enter-overlay {
+  position:absolute; inset:0; z-index:10;
+  pointer-events:none;
+  background: linear-gradient(180deg, var(--void) 0%, transparent 100%);
+}
+
+/* ── ABOUT 3D Card shine ── */
+.about__card {
+  transform-style: preserve-3d;
+  transition: box-shadow .3s ease;
+}
+
+/* ── Project card glitch border ── */
+.project-card::after {
+  content:''; position:absolute; inset:-1px;
+  border-radius:var(--r-lg);
+  background:linear-gradient(135deg,var(--plasma),var(--cyan));
+  z-index:-1; opacity:0; transition:opacity .3s ease;
+}
+.project-card:hover::after { opacity:.5; }
+
+/* ── Magnetic button effect ── */
+.btn--primary, .btn--outline, .btn--cv {
+  transition: transform .3s cubic-bezier(.34,1.56,.64,1), box-shadow .3s ease;
+}
+
+
+/* ════════════════════════════════════════════════════
+   LIGHT / DARK MODE  — CSS Variable Override System
+════════════════════════════════════════════════════ */
+
+/* ── Light mode overrides ── */
+:root.light-mode {
+  --void:       #f0f2f8;
+  --bg-2:       #ffffff;
+  --bg-3:       #f4f6fb;
+  --surface:    rgba(255,255,255,0.85);
+  --surface-2:  rgba(240,242,248,0.9);
+  --surface-3:  rgba(230,233,242,0.95);
+  --border:     rgba(180,185,210,0.45);
+  --border-2:   rgba(139,92,246,0.35);
+  --border-glow:rgba(139,92,246,0.3);
+  --text:       #0f1020;
+  --text-2:     #2d3050;
+  --text-3:     #6b7098;
+  --muted:      #9ca3b8;
+
+  /* Keep brand colors vibrant in light mode */
+  --plasma:     #7c3aed;
+  --cyan:       #0891b2;
+  --violet:     #6d28d9;
+  --violet-2:   #7c3aed;
+  --violet-3:   #8b5cf6;
+  --green:      #059669;
+  --gold:       #d97706;
+  --red:        #dc2626;
+
+  /* Hero glow in light */
+  --hero-glow-1: rgba(124,58,237,0.12);
+  --hero-glow-2: rgba(8,145,178,0.08);
+}
+
+:root.light-mode body {
+  background: #f0f2f8;
+  color: #0f1020;
+}
+
+/* Light mode specific overrides */
+:root.light-mode .nav {
+  background: rgba(240,242,248,0.92) !important;
+  border-bottom-color: rgba(180,185,210,0.5) !important;
+  box-shadow: 0 2px 20px rgba(0,0,0,0.08) !important;
+}
+:root.light-mode .nav__logo { color: #0f1020; }
+:root.light-mode .nav__link { color: #2d3050; }
+:root.light-mode .nav__link:hover { color: var(--plasma); }
+:root.light-mode .nav__link--active { color: var(--plasma); }
+
+:root.light-mode .hero {
+  background: linear-gradient(135deg, #f0f2f8 0%, #e8eaf6 50%, #f0f2f8 100%) !important;
+}
+:root.light-mode .hero__grid-bg {
+  opacity: 0.3 !important;
+}
+:root.light-mode .hero__glow--1 {
+  background: radial-gradient(ellipse 700px 500px, rgba(124,58,237,0.12) 0%, transparent 70%) !important;
+}
+:root.light-mode .hero__glow--2 {
+  background: radial-gradient(ellipse 500px 400px, rgba(8,145,178,0.08) 0%, transparent 70%) !important;
+}
+:root.light-mode .hero__name-main {
+  background: linear-gradient(135deg, #1a1b3a 0%, #7c3aed 100%) !important;
+  -webkit-background-clip: text !important;
+  background-clip: text !important;
+  -webkit-text-fill-color: transparent !important;
+}
+:root.light-mode .hero__title { color: #2d3050 !important; }
+:root.light-mode .hero__sub { color: #4b5280 !important; }
+:root.light-mode .hero__stat-num { color: var(--plasma) !important; }
+:root.light-mode .hero__stat-label { color: #6b7098 !important; }
+:root.light-mode .hero__badge {
+  background: rgba(124,58,237,0.08) !important;
+  border-color: rgba(124,58,237,0.25) !important;
+}
+
+:root.light-mode .section { background: transparent; }
+:root.light-mode .section--dark { background: rgba(139,92,246,0.04) !important; }
+:root.light-mode .section__title {
+  background: linear-gradient(135deg, #0f1020 60%, #7c3aed) !important;
+  -webkit-background-clip: text !important; background-clip: text !important;
+  -webkit-text-fill-color: transparent !important;
+}
+:root.light-mode .section__label { color: var(--cyan) !important; }
+
+:root.light-mode .skill-card {
+  background: rgba(255,255,255,0.9) !important;
+  border-color: rgba(180,185,210,0.5) !important;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.06) !important;
+}
+:root.light-mode .skill-card:hover {
+  border-color: rgba(124,58,237,0.4) !important;
+  box-shadow: 0 8px 30px rgba(0,0,0,0.1) !important;
+}
+:root.light-mode .skill-card__name { color: #0f1020 !important; }
+:root.light-mode .skill-card__cat  { color: #6b7098 !important; }
+:root.light-mode .skill-card__pct  { color: var(--plasma) !important; }
+
+:root.light-mode .project-card {
+  background: rgba(255,255,255,0.92) !important;
+  border-color: rgba(180,185,210,0.5) !important;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.08) !important;
+}
+:root.light-mode .project-card__title { color: #0f1020 !important; }
+:root.light-mode .project-card__desc  { color: #4b5280 !important; }
+
+:root.light-mode .testi-card {
+  background: rgba(255,255,255,0.9) !important;
+  border-color: rgba(180,185,210,0.5) !important;
+}
+:root.light-mode .testi-card__quote { color: #2d3050 !important; }
+:root.light-mode .testi-card__name  { color: #0f1020 !important; }
+
+:root.light-mode .blog-card {
+  background: rgba(255,255,255,0.9) !important;
+  border-color: rgba(180,185,210,0.5) !important;
+}
+:root.light-mode .blog-card__title a { color: #0f1020 !important; }
+:root.light-mode .blog-card__excerpt  { color: #4b5280 !important; }
+
+:root.light-mode .contact__form .form__input {
+  background: rgba(240,242,248,0.8) !important;
+  border-color: rgba(180,185,210,0.6) !important;
+  color: #0f1020 !important;
+}
+:root.light-mode .contact__form .form__input:focus {
+  border-color: var(--plasma) !important;
+  background: rgba(255,255,255,0.95) !important;
+}
+:root.light-mode .form__label { color: #2d3050 !important; }
+
+:root.light-mode .footer {
+  background: rgba(230,233,242,0.9) !important;
+  border-top-color: rgba(180,185,210,0.5) !important;
+}
+:root.light-mode .footer__copy  { color: #6b7098 !important; }
+:root.light-mode .footer__stack { color: #6b7098 !important; }
+
+/* Ficons lighter in light mode */
+:root.light-mode .ficon { opacity: 0.6 !important; }
+
+/* ── THEME TOGGLE BUTTON — Navbar ── */
+.theme-toggle {
+  position: relative;
+  background: none; border: none; cursor: pointer; padding: 0;
+  display: flex; align-items: center;
+}
+.theme-toggle__track {
+  width: 52px; height: 28px; border-radius: 99px;
+  background: rgba(139,92,246,0.15);
+  border: 1px solid rgba(139,92,246,0.3);
+  display: flex; align-items: center; padding: 2px;
+  transition: all 0.4s cubic-bezier(0.34,1.56,0.64,1);
+  position: relative; overflow: hidden;
+}
+.theme-toggle__track::before {
+  content: '';
+  position: absolute; inset: 0;
+  background: linear-gradient(135deg, #f0f2f8, #e8eaf6);
+  opacity: 0;
+  transition: opacity 0.4s ease;
+}
+:root.light-mode .theme-toggle__track::before { opacity: 1; }
+:root.light-mode .theme-toggle__track {
+  background: rgba(8,145,178,0.1);
+  border-color: rgba(8,145,178,0.3);
+}
+
+.theme-toggle__thumb {
+  width: 22px; height: 22px; border-radius: 50%;
+  background: linear-gradient(135deg, #8b5cf6, #6d28d9);
+  display: flex; align-items: center; justify-content: center;
+  transition: transform 0.4s cubic-bezier(0.34,1.56,0.64,1), background 0.3s ease;
+  position: relative; z-index: 1;
+  box-shadow: 0 2px 8px rgba(139,92,246,0.5);
+}
+:root.light-mode .theme-toggle__thumb {
+  transform: translateX(24px);
+  background: linear-gradient(135deg, #f59e0b, #d97706);
+  box-shadow: 0 2px 12px rgba(245,158,11,0.5);
+}
+.theme-icon { font-size: 0.65rem; color: #fff; position: absolute; transition: opacity 0.3s ease; }
+.theme-icon--dark  { opacity: 1; }
+.theme-icon--light { opacity: 0; }
+:root.light-mode .theme-icon--dark  { opacity: 0; }
+:root.light-mode .theme-icon--light { opacity: 1; }
+
+/* ── FLOATING THEME BUTTON (mobile) ── */
+.float-btn--theme {
+  bottom: 9rem; right: 1.5rem;
+  background: linear-gradient(135deg, rgba(139,92,246,0.9), rgba(109,40,217,0.9));
+  color: #fff; font-size: 1.1rem;
+  border: 1px solid rgba(139,92,246,0.4);
+  backdrop-filter: blur(12px);
+  opacity: 0; transform: translateY(20px); visibility: hidden;
+  transition: opacity .4s ease, transform .4s ease, background .3s ease;
+}
+.float-btn--theme.visible {
+  opacity: 1; transform: none; visibility: visible;
+}
+:root.light-mode .float-btn--theme {
+  background: linear-gradient(135deg, rgba(245,158,11,0.9), rgba(217,119,6,0.9));
+  border-color: rgba(245,158,11,0.4);
+}
+.float-btn--theme:hover {
+  transform: scale(1.1);
+  box-shadow: 0 8px 24px rgba(139,92,246,0.4);
+}
+:root.light-mode .float-btn--theme:hover {
+  box-shadow: 0 8px 24px rgba(245,158,11,0.4);
+}
+
+/* Show float toggle only on mobile */
+@media (min-width: 768px) {
+  .float-btn--theme { display: none !important; }
+}
+@media (max-width: 767px) {
+  .theme-toggle { display: none; } /* hide navbar toggle on mobile — use float instead */
+}
+
+/* ── TRANSITION on mode change ── */
+*, *::before, *::after {
+  transition: background-color 0.35s ease, border-color 0.35s ease, color 0.2s ease !important;
+}
+/* But keep GSAP animations instant */
+.ficon, .hero__name-main, .btn { transition: none !important; }
+.btn--primary, .btn--outline, .btn--cv, .btn--ghost {
+  transition: transform 0.3s ease, box-shadow 0.3s ease, opacity 0.2s ease !important;
+}
+
+
+
+/* ════════════════════════════════════════════
+   3D INTERACTIVE PROFILE AVATAR
+════════════════════════════════════════════ */
+.avatar-3d-scene {
+  width: 280px;
+  perspective: 800px;
+  perspective-origin: center center;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: .75rem;
+  cursor: grab;
+  user-select: none;
+}
+.avatar-3d-scene:active { cursor: grabbing; }
+
+.avatar-3d-card {
+  width: 280px;
+  height: 340px;
+  position: relative;
+  transform-style: preserve-3d;
+  border-radius: 1.5rem;
+  background: linear-gradient(135deg,
+    rgba(139,92,246,.18) 0%,
+    rgba(0,245,255,.06) 50%,
+    rgba(109,40,217,.12) 100%
+  );
+  border: 1px solid rgba(139,92,246,.35);
+  box-shadow:
+    0 25px 60px rgba(0,0,0,.6),
+    0 0 40px rgba(139,92,246,.15),
+    inset 0 1px 0 rgba(255,255,255,.08);
+  backdrop-filter: blur(20px);
+  transition: box-shadow .3s ease;
+  will-change: transform;
+  overflow: hidden;
+}
+.avatar-3d-card:hover {
+  box-shadow:
+    0 35px 80px rgba(0,0,0,.7),
+    0 0 60px rgba(139,92,246,.25),
+    inset 0 1px 0 rgba(255,255,255,.12);
+}
+
+/* Glow orbs inside card */
+.avatar-3d-orb {
+  position: absolute; border-radius: 50%;
+  pointer-events: none; filter: blur(30px);
+}
+.avatar-3d-orb--1 {
+  width: 140px; height: 140px;
+  background: rgba(139,92,246,.35);
+  top: -40px; left: -40px;
+  animation: orbFloat1 6s ease-in-out infinite;
+}
+.avatar-3d-orb--2 {
+  width: 100px; height: 100px;
+  background: rgba(0,245,255,.25);
+  bottom: -30px; right: -30px;
+  animation: orbFloat2 8s ease-in-out infinite;
+}
+@keyframes orbFloat1 {
+  0%,100% { transform:translate(0,0) scale(1); }
+  50%      { transform:translate(15px,10px) scale(1.1); }
+}
+@keyframes orbFloat2 {
+  0%,100% { transform:translate(0,0) scale(1); }
+  50%      { transform:translate(-10px,-15px) scale(1.15); }
+}
+
+/* Hologram ring */
+.avatar-3d-ring {
+  position: absolute;
+  bottom: 12px; left: 50%;
+  transform: translateX(-50%);
+  width: 200px; height: 20px;
+  border-radius: 50%;
+  background: transparent;
+  border: 1px solid rgba(139,92,246,.4);
+  box-shadow: 0 0 20px rgba(139,92,246,.3), 0 0 40px rgba(139,92,246,.15);
+  animation: ringPulse 3s ease-in-out infinite;
+}
+@keyframes ringPulse {
+  0%,100% { opacity:.4; transform:translateX(-50%) scaleX(1); }
+  50%     { opacity:.9; transform:translateX(-50%) scaleX(1.05); }
+}
+
+/* Photo container */
+.avatar-3d-photo {
+  position: absolute;
+  top: 20px; left: 20px; right: 20px; bottom: 45px;
+  border-radius: 1rem;
+  overflow: hidden;
+  border: 1px solid rgba(255,255,255,.1);
+}
+.avatar-3d-photo img {
+  width: 100%; height: 100%;
+  object-fit: cover; object-position: top center;
+  display: block;
+  transition: transform .4s ease;
+}
+.avatar-3d-card:hover .avatar-3d-photo img {
+  transform: scale(1.04);
+}
+.avatar-3d-fallback {
+  width: 100%; height: 100%;
+  background: linear-gradient(135deg,rgba(139,92,246,.2),rgba(0,245,255,.1));
+  display: flex; align-items: center; justify-content: center;
+  font-size: 4rem; color: var(--violet-2);
+}
+
+/* Scanlines overlay */
+.avatar-3d-scanlines {
+  position: absolute; inset: 0;
+  background: repeating-linear-gradient(
+    0deg,
+    transparent 0px, transparent 3px,
+    rgba(0,0,0,.08) 3px, rgba(0,0,0,.08) 4px
+  );
+  pointer-events: none;
+  opacity: .5;
+  animation: scanMove 8s linear infinite;
+}
+@keyframes scanMove {
+  0%   { background-position: 0 0; }
+  100% { background-position: 0 100%; }
+}
+
+/* Corner SVG brackets */
+.avatar-3d-corner {
+  position: absolute; width: 22px; height: 22px;
+  pointer-events: none;
+  opacity: .9;
+  animation: cornerPulse 2.5s ease-in-out infinite;
+}
+.avatar-3d-corner--tl { top: 6px;  left: 6px; }
+.avatar-3d-corner--tr { top: 6px;  right: 6px; transform: scaleX(-1); }
+.avatar-3d-corner--bl { bottom: 6px; left: 6px;  transform: scaleY(-1); }
+.avatar-3d-corner--br { bottom: 6px; right: 6px; transform: scale(-1,-1); }
+@keyframes cornerPulse {
+  0%,100% { opacity:.7; }
+  50%     { opacity:1; filter:drop-shadow(0 0 4px var(--cyan)); }
+}
+
+/* Name badge */
+.avatar-3d-badge {
+  position: absolute; bottom: 10px; left: 50%;
+  transform: translateX(-50%);
+  display: flex; align-items: center; gap: .4rem;
+  background: rgba(0,0,0,.5);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(139,92,246,.35);
+  border-radius: 99px;
+  padding: .22rem .85rem;
+  font-size: .75rem; font-weight: 600;
+  color: var(--text); white-space: nowrap;
+  font-family: var(--font-mono);
+  letter-spacing: .04em;
+  box-shadow: 0 4px 16px rgba(0,0,0,.4);
+}
+.avatar-3d-badge-dot {
+  width: 6px; height: 6px; border-radius: 50%;
+  background: var(--green);
+  box-shadow: 0 0 8px var(--green);
+  animation: neonPulse 1.8s ease-in-out infinite;
+}
+
+/* Shine layer (mouse follow) */
+.avatar-3d-shine {
+  position: absolute; inset: 0; border-radius: 1.5rem;
+  pointer-events: none;
+  background: radial-gradient(circle at 50% 50%, rgba(255,255,255,.08) 0%, transparent 60%);
+  opacity: 0;
+  transition: opacity .3s ease;
+}
+.avatar-3d-card:hover .avatar-3d-shine { opacity: 1; }
+
+/* Drag hint */
+.avatar-3d-hint {
+  font-size: .72rem; color: var(--text-3);
+  font-family: var(--font-mono);
+  display: flex; align-items: center; gap: .35rem;
+  animation: hintFade 3s ease-in-out 2s forwards;
+}
+@keyframes hintFade {
+  0%  { opacity: 1; }
+  80% { opacity: 1; }
+  100%{ opacity: 0; }
+}
+.avatar-3d-hint i { color: var(--plasma); font-size: .8rem; }
+
+/* ── LIGHT MODE for 3D card ── */
+:root.light-mode .avatar-3d-card {
+  background: linear-gradient(135deg,
+    rgba(255,255,255,0.92) 0%,
+    rgba(240,242,255,0.85) 50%,
+    rgba(230,235,255,0.9) 100%
+  ) !important;
+  border-color: rgba(124,58,237,.2) !important;
+  box-shadow: 0 25px 60px rgba(0,0,0,.15), 0 0 40px rgba(124,58,237,.1) !important;
+}
+:root.light-mode .avatar-3d-orb--1 { background: rgba(124,58,237,.2) !important; }
+:root.light-mode .avatar-3d-orb--2 { background: rgba(8,145,178,.15) !important; }
+:root.light-mode .avatar-3d-badge {
+  background: rgba(255,255,255,.85) !important;
+  color: #1a1b3a !important;
+  border-color: rgba(124,58,237,.25) !important;
+}
+:root.light-mode .avatar-3d-hint { color: #9ca3b8 !important; }
+
+@media (max-width: 768px) {
+  .avatar-3d-scene { width: 240px; }
+  .avatar-3d-card  { width: 240px; height: 290px; }
+}
+@media (max-width: 480px) {
+  .avatar-3d-scene { width: 200px; }
+  .avatar-3d-card  { width: 200px; height: 245px; }
+}
+
+
+/* ════════════════════════════════════════════════════════════
+   LUXURY LIGHT MODE — Premium Gold & White Theme
+   Completely different aesthetic from dark mode
+   Inspired by high-end design agencies
+════════════════════════════════════════════════════════════ */
+:root.light-mode {
+  --void:       #f7f8fc;
+  --bg-2:       #ffffff;
+  --bg-3:       #f0f2fa;
+  --surface:    rgba(255,255,255,0.95);
+  --surface-2:  rgba(245,246,252,0.95);
+  --surface-3:  rgba(235,237,248,0.98);
+  --border:     rgba(200,205,230,0.6);
+  --border-2:   rgba(124,58,237,0.3);
+  --border-glow:rgba(124,58,237,0.25);
+  --text:       #0d0e1f;
+  --text-2:     #2d3058;
+  --text-3:     #7277a0;
+  --muted:      #a8adc8;
+
+  --plasma:     #7c3aed;
+  --cyan:       #0284c7;
+  --violet:     #6d28d9;
+  --violet-2:   #7c3aed;
+  --violet-3:   #8b5cf6;
+  --green:      #059669;
+  --gold:       #d97706;
+  --red:        #dc2626;
+}
+
+:root.light-mode body {
+  background: #f7f8fc;
+  background-image:
+    radial-gradient(ellipse 1200px 800px at 20% 0%, rgba(124,58,237,.04) 0%, transparent 60%),
+    radial-gradient(ellipse 800px 600px at 80% 100%, rgba(2,132,199,.03) 0%, transparent 60%);
+}
+
+/* ── NAV light ── */
+:root.light-mode .nav {
+  background: rgba(255,255,255,.92) !important;
+  border-bottom: 1px solid rgba(200,205,230,.5) !important;
+  box-shadow: 0 2px 30px rgba(0,0,0,.06) !important;
+}
+:root.light-mode .nav__logo { color: #0d0e1f !important; }
+:root.light-mode .nav__logo-dot { background: #7c3aed !important; box-shadow: 0 0 10px rgba(124,58,237,.4) !important; }
+:root.light-mode .nav__link { color: #2d3058 !important; }
+:root.light-mode .nav__link:hover, :root.light-mode .nav__link--active { color: #7c3aed !important; }
+:root.light-mode .nav--scrolled { box-shadow: 0 4px 24px rgba(0,0,0,.08) !important; }
+
+/* ── HERO light ── */
+:root.light-mode .hero {
+  background: linear-gradient(160deg, #f7f8fc 0%, #ece9ff 40%, #e8f4fd 70%, #f7f8fc 100%) !important;
+}
+:root.light-mode .hero__grid-bg { opacity: 0.08 !important; filter: invert(1); }
+:root.light-mode .hero__glow--1 {
+  background: radial-gradient(ellipse 700px 500px, rgba(124,58,237,.1) 0%, transparent 70%) !important;
+}
+:root.light-mode .hero__glow--2 {
+  background: radial-gradient(ellipse 500px 400px, rgba(2,132,199,.07) 0%, transparent 70%) !important;
+}
+:root.light-mode .hero__badge {
+  background: rgba(124,58,237,.07) !important;
+  border-color: rgba(124,58,237,.2) !important;
+  color: #7c3aed !important;
+}
+:root.light-mode .hero__badge-dot { background: #059669 !important; box-shadow: 0 0 8px #059669 !important; }
+:root.light-mode .hero__name-main {
+  background: linear-gradient(135deg, #1a1c40 0%, #7c3aed 60%, #0284c7 100%) !important;
+  -webkit-background-clip: text !important;
+  background-clip: text !important;
+  -webkit-text-fill-color: transparent !important;
+}
+:root.light-mode .hero__name-line { color: #2d3058 !important; }
+:root.light-mode .hero__title { color: #7c3aed !important; }
+:root.light-mode .hero__sub { color: #4b5280 !important; }
+:root.light-mode .hero__stat-num { color: #7c3aed !important; }
+:root.light-mode .hero__stat-label { color: #7277a0 !important; }
+:root.light-mode .hero__stat { border-right-color: rgba(200,205,230,.6) !important; }
+:root.light-mode .hero__scroll-hint { color: #7277a0 !important; }
+:root.light-mode .hero__scroll-line { background: linear-gradient(to bottom, #7c3aed, transparent) !important; }
+:root.light-mode .ficon { opacity: 0.5 !important; filter: saturate(1.5) brightness(.85); }
+
+/* ── SECTIONS light ── */
+:root.light-mode .section { background: transparent !important; }
+:root.light-mode .section--dark {
+  background: linear-gradient(180deg, rgba(124,58,237,.03) 0%, rgba(255,255,255,0) 100%) !important;
+}
+:root.light-mode .section__label { color: #0284c7 !important; letter-spacing: .18em; }
+:root.light-mode .section__title {
+  background: linear-gradient(135deg, #0d0e1f 50%, #7c3aed 100%) !important;
+  -webkit-background-clip: text !important; background-clip: text !important;
+  -webkit-text-fill-color: transparent !important;
+}
+:root.light-mode .section__link { color: #7c3aed !important; }
+
+/* ── ABOUT light ── */
+:root.light-mode .about__lead strong { color: #7c3aed !important; }
+:root.light-mode .about__card {
+  background: rgba(255,255,255,.92) !important;
+  border-color: rgba(200,205,230,.6) !important;
+  box-shadow: 0 8px 32px rgba(0,0,0,.06), 0 2px 8px rgba(124,58,237,.06) !important;
+}
+:root.light-mode .about__card-item { color: #2d3058 !important; }
+:root.light-mode .about__card-item i { color: #7c3aed !important; }
+:root.light-mode .about__social {
+  background: rgba(255,255,255,.9) !important;
+  border-color: rgba(200,205,230,.6) !important;
+  color: #2d3058 !important;
+  box-shadow: 0 2px 8px rgba(0,0,0,.06) !important;
+}
+:root.light-mode .about__social:hover { background: #7c3aed !important; color: #fff !important; border-color: #7c3aed !important; }
+:root.light-mode .tag {
+  background: rgba(124,58,237,.07) !important;
+  border-color: rgba(124,58,237,.2) !important;
+  color: #7c3aed !important;
+}
+:root.light-mode .about__lead { color: #0d0e1f !important; }
+:root.light-mode .about__text p { color: #3d4270 !important; }
+
+/* ── SKILLS light ── */
+:root.light-mode .skills__tab {
+  background: rgba(255,255,255,.85) !important;
+  border-color: rgba(200,205,230,.6) !important;
+  color: #4b5280 !important;
+}
+:root.light-mode .skills__tab--active, :root.light-mode .skills__tab:hover {
+  background: rgba(124,58,237,.08) !important;
+  border-color: rgba(124,58,237,.3) !important;
+  color: #7c3aed !important;
+}
+:root.light-mode .skill-card {
+  background: rgba(255,255,255,.9) !important;
+  border-color: rgba(200,205,230,.55) !important;
+  box-shadow: 0 4px 20px rgba(0,0,0,.05), 0 1px 4px rgba(124,58,237,.05) !important;
+}
+:root.light-mode .skill-card:hover {
+  border-color: rgba(124,58,237,.35) !important;
+  box-shadow: 0 12px 40px rgba(0,0,0,.1), 0 0 20px rgba(124,58,237,.1) !important;
+}
+:root.light-mode .skill-card__icon-wrap {
+  background: linear-gradient(135deg, rgba(124,58,237,.08), rgba(2,132,199,.05)) !important;
+  border-color: rgba(124,58,237,.15) !important;
+}
+:root.light-mode .skill-card__name { color: #0d0e1f !important; }
+:root.light-mode .skill-card__cat  { color: #7277a0 !important; }
+:root.light-mode .skill-card__pct  { color: #7c3aed !important; }
+:root.light-mode .skill-card__bar  { background: rgba(200,205,230,.4) !important; }
+:root.light-mode .skill-card__fill { box-shadow: 0 0 8px rgba(124,58,237,.3) !important; }
+
+/* ── PROJECTS light ── */
+:root.light-mode .project-card {
+  background: rgba(255,255,255,.9) !important;
+  border-color: rgba(200,205,230,.55) !important;
+  box-shadow: 0 4px 20px rgba(0,0,0,.06) !important;
+}
+:root.light-mode .project-card:hover {
+  box-shadow: 0 20px 50px rgba(0,0,0,.12), 0 0 20px rgba(124,58,237,.08) !important;
+}
+:root.light-mode .project-card__title { color: #0d0e1f !important; }
+:root.light-mode .project-card__desc  { color: #4b5280 !important; }
+:root.light-mode .tech-tag {
+  background: rgba(124,58,237,.06) !important;
+  border-color: rgba(124,58,237,.18) !important;
+  color: #6d28d9 !important;
+}
+
+/* ── EDUCATION light ── */
+:root.light-mode .edu-card {
+  background: rgba(255,255,255,.9) !important;
+  border-color: rgba(200,205,230,.55) !important;
+}
+:root.light-mode .edu-card__year { color: #7c3aed !important; }
+:root.light-mode .edu-card h4 { color: #0d0e1f !important; }
+:root.light-mode .edu-card__inst { color: #7277a0 !important; }
+:root.light-mode .cert-card {
+  background: rgba(255,255,255,.9) !important;
+  border-color: rgba(200,205,230,.55) !important;
+  box-shadow: 0 4px 16px rgba(0,0,0,.05) !important;
+}
+:root.light-mode .cert-card__name   { color: #0d0e1f !important; }
+:root.light-mode .cert-card__issuer { color: #7277a0 !important; }
+:root.light-mode .cert-card__icon i { color: #7c3aed !important; }
+
+/* ── TESTIMONIALS light ── */
+:root.light-mode .testi-card {
+  background: rgba(255,255,255,.92) !important;
+  border-color: rgba(200,205,230,.55) !important;
+  box-shadow: 0 4px 20px rgba(0,0,0,.05) !important;
+}
+:root.light-mode .testi-card::after { color: rgba(124,58,237,.06) !important; }
+:root.light-mode .testi-card__quote {
+  color: #3d4270 !important;
+  border-left-color: rgba(124,58,237,.3) !important;
+}
+:root.light-mode .testi-card__name   { color: #0d0e1f !important; }
+:root.light-mode .testi-card__title  { color: #7277a0 !important; }
+:root.light-mode .testi-card__avatar-placeholder {
+  box-shadow: 0 0 12px rgba(124,58,237,.2) !important;
+}
+
+/* ── BLOG light ── */
+:root.light-mode .blog-card {
+  background: rgba(255,255,255,.92) !important;
+  border-color: rgba(200,205,230,.55) !important;
+  box-shadow: 0 4px 20px rgba(0,0,0,.05) !important;
+}
+:root.light-mode .blog-card:hover {
+  box-shadow: 0 16px 40px rgba(0,0,0,.1) !important;
+}
+:root.light-mode .blog-card__title a { color: #0d0e1f !important; }
+:root.light-mode .blog-card__title a:hover { color: #7c3aed !important; }
+:root.light-mode .blog-card__excerpt { color: #4b5280 !important; }
+:root.light-mode .blog-card__date { color: #7277a0 !important; }
+:root.light-mode .blog-cat { background: rgba(124,58,237,.07) !important; border-color: rgba(124,58,237,.2) !important; color: #6d28d9 !important; }
+
+/* ── CONTACT light ── */
+:root.light-mode .contact__intro { color: #4b5280 !important; }
+:root.light-mode .contact__detail { color: #2d3058 !important; }
+:root.light-mode .contact__detail i { color: #7c3aed !important; }
+:root.light-mode .contact__socials a {
+  background: rgba(255,255,255,.85) !important;
+  border-color: rgba(200,205,230,.6) !important;
+  color: #2d3058 !important;
+}
+:root.light-mode .contact__socials a:hover { background: #7c3aed !important; color: #fff !important; }
+:root.light-mode .contact__form {
+  background: rgba(255,255,255,.9) !important;
+  border: 1px solid rgba(200,205,230,.5) !important;
+  border-radius: var(--r-xl) !important;
+  padding: 2rem !important;
+  box-shadow: 0 8px 32px rgba(0,0,0,.06) !important;
+}
+:root.light-mode .form__label { color: #2d3058 !important; font-weight: 600 !important; }
+:root.light-mode .form__input {
+  background: #f7f8fc !important;
+  border-color: rgba(200,205,230,.7) !important;
+  color: #0d0e1f !important;
+}
+:root.light-mode .form__input:focus {
+  background: #fff !important;
+  border-color: #7c3aed !important;
+  box-shadow: 0 0 0 3px rgba(124,58,237,.1) !important;
+}
+:root.light-mode .form__input::placeholder { color: #a8adc8 !important; }
+
+/* ── FOOTER light ── */
+:root.light-mode .footer {
+  background: #fff !important;
+  border-top: 1px solid rgba(200,205,230,.5) !important;
+  box-shadow: 0 -4px 24px rgba(0,0,0,.04) !important;
+}
+:root.light-mode .footer__copy  { color: #7277a0 !important; }
+:root.light-mode .footer__stack { color: #7277a0 !important; }
+:root.light-mode .footer__socials a { color: #4b5280 !important; }
+:root.light-mode .footer__socials a:hover { color: #7c3aed !important; }
+
+/* ── FLOAT BUTTONS light ── */
+:root.light-mode .float-btn--top {
+  background: rgba(255,255,255,.92) !important;
+  border-color: rgba(200,205,230,.6) !important;
+  color: #4b5280 !important;
+  box-shadow: 0 4px 20px rgba(0,0,0,.1) !important;
+}
+:root.light-mode .float-btn--top:hover { color: #7c3aed !important; border-color: #7c3aed !important; }
+
+/* ── BUTTONS light mode ── */
+:root.light-mode .btn--ghost {
+  color: #2d3058 !important;
+  border-color: rgba(200,205,230,.7) !important;
+}
+:root.light-mode .btn--ghost:hover {
+  background: rgba(124,58,237,.06) !important;
+  color: #7c3aed !important;
+  border-color: rgba(124,58,237,.3) !important;
+}
+:root.light-mode .btn--cv {
+  background: rgba(217,119,6,.07) !important;
+  border-color: rgba(217,119,6,.3) !important;
+  color: #b45309 !important;
+}
+:root.light-mode .btn--cv:hover {
+  background: rgba(217,119,6,.14) !important;
+  border-color: rgba(217,119,6,.5) !important;
+}
+
+/* ── THEME TOGGLE in light ── */
+:root.light-mode .theme-toggle__track {
+  background: linear-gradient(135deg, #fef3c7, #fde68a) !important;
+  border-color: rgba(217,119,6,.35) !important;
+}
+:root.light-mode .float-btn--theme {
+  background: linear-gradient(135deg, #f59e0b, #d97706) !important;
+  border-color: rgba(245,158,11,.4) !important;
+  box-shadow: 0 4px 20px rgba(245,158,11,.35) !important;
+}
+
+/* ── NAV DRAWER light ── */
+:root.light-mode .nav__drawer {
+  background: rgba(255,255,255,.98) !important;
+  border-right: 1px solid rgba(200,205,230,.5) !important;
+}
+:root.light-mode .nav__drawer a { color: #2d3058 !important; }
+:root.light-mode .nav__drawer a:hover { color: #7c3aed !important; }
+:root.light-mode .nav__backdrop { background: rgba(13,14,31,.3) !important; }
+
+/* ── SUBSECTION TITLES light ── */
+:root.light-mode .subsection__title { color: #0d0e1f !important; }
+:root.light-mode .subsection__title i { color: #7c3aed !important; }
+
+/* Smooth transition for everything */
+:root.light-mode *, :root.light-mode *::before, :root.light-mode *::after {
+  transition: background-color .3s ease, border-color .3s ease, color .2s ease, box-shadow .3s ease !important;
+}
+:root.light-mode .ficon, :root.light-mode .btn--primary, :root.light-mode .btn--outline {
+  transition: none !important;
+}
+
+</style>
+
+<script>
+/* ════════════════════════════════════════════════════════════
+   GSAP 3D CINEMATIC ANIMATIONS  — Per-Section Entrance
+   Each navbar section gets its own unique 3D reveal effect
+════════════════════════════════════════════════════════════ */
+document.addEventListener('DOMContentLoaded', () => {
+
+  gsap.registerPlugin(ScrollTrigger, ScrollToPlugin, TextPlugin);
+
+  /* ────────────────────────────────────────
+     UTILS
+  ──────────────────────────────────────── */
+  const mm = gsap.matchMedia();
+  const isMob = () => window.innerWidth < 768;
+
+  /* ────────────────────────────────────────
+     NAV — scroll + progress + active
+  ──────────────────────────────────────── */
+  ScrollTrigger.create({
+    start: 60,
+    onEnter:     () => document.getElementById('mainNav')?.classList.add('nav--scrolled'),
+    onLeaveBack: () => document.getElementById('mainNav')?.classList.remove('nav--scrolled')
+  });
+  ScrollTrigger.create({
+    start:'top top', end:'max',
+    onUpdate: self => {
+      const bar = document.getElementById('navProgress');
+      if (bar) bar.style.width = (self.progress * 100) + '%';
+    }
+  });
+
+  // Hamburger
+  const burger   = document.getElementById('hamburger');
+  const drawer   = document.getElementById('navDrawer');
+  const backdrop = document.getElementById('navBackdrop');
+  burger?.addEventListener('click', () => {
+    const open = drawer.classList.toggle('open');
+    backdrop?.classList.toggle('show', open);
+  });
+  backdrop?.addEventListener('click', () => {
+    drawer.classList.remove('open');
+    backdrop.classList.remove('show');
+  });
+
+  // Active nav link
+  document.querySelectorAll('section[id]').forEach(sec => {
+    ScrollTrigger.create({
+      trigger:sec, start:'top 52%', end:'bottom 52%',
+      onEnter:     () => setActiveNav(sec.id),
+      onEnterBack: () => setActiveNav(sec.id)
+    });
+  });
+  function setActiveNav(id) {
+    document.querySelectorAll('.nav__link').forEach(l =>
+      l.classList.toggle('nav__link--active', l.getAttribute('href') === '#' + id)
+    );
+  }
+
+  /* ────────────────────────────────────────
+     SMOOTH SCROLL — GSAP ScrollTo
+  ──────────────────────────────────────── */
+  document.querySelectorAll('a[href^="#"]').forEach(a => {
+    a.addEventListener('click', e => {
+      const tgt = document.querySelector(a.getAttribute('href'));
+      if (!tgt) return;
+      e.preventDefault();
+      gsap.to(window, {
+        duration: 1.3, scrollTo:{ y:tgt, offsetY:76 }, ease:'expo.inOut'
+      });
+      drawer?.classList.remove('open');
+      backdrop?.classList.remove('show');
+    });
+  });
+
+  /* ════════════════════════════════════════
+     ① HERO  — Cinematic explosive entrance
+  ════════════════════════════════════════ */
+  const heroTL = gsap.timeline({ delay:.12 });
+  heroTL
+    .from('#heroBadge', {
+      opacity:0, y:-40, scale:.6, rotateX:-30,
+      duration:.8, ease:'back.out(2.5)',
+      transformPerspective:600
+    })
+    .from('#heroGreeting', {
+      opacity:0, x:-60, rotateY:-25,
+      duration:.6, ease:'power3.out',
+      transformPerspective:800
+    }, '-=.35')
+    .from('#heroName', {
+      opacity:0, y:80, skewX:-8, scale:.88,
+      duration:1.1, ease:'expo.out'
+    }, '-=.3')
+    .from('#heroTitle', {
+      opacity:0, x:50, rotateY:15,
+      duration:.6, ease:'power3.out',
+      transformPerspective:600
+    }, '-=.55')
+    .from('#heroSub', {
+      opacity:0, y:30, duration:.6, ease:'power2.out'
+    }, '-=.35')
+    .from('#heroCta .btn', {
+      opacity:0, y:40, rotateX:-20, scale:.8,
+      stagger:.12, duration:.6, ease:'back.out(2)',
+      transformPerspective:600
+    }, '-=.25')
+    .from('#heroStats .hero__stat', {
+      opacity:0, y:30, scale:.7,
+      stagger:.1, duration:.55, ease:'back.out(2)'
+    }, '-=.2')
+    .from('#heroScroll', { opacity:0, y:15, duration:.5 }, '-=.1')
+    .from('.ficon', {
+      opacity:0, scale:0, rotateZ:-180,
+      stagger:.04, duration:.7, ease:'back.out(3)'
+    }, '-=1.1');
+
+  /* Hero stat counters */
+  document.querySelectorAll('.hero__stat-num').forEach(el => {
+    const target = parseInt(el.dataset.count) || 0;
+    gsap.to({ val:0 }, {
+      val:target, duration:3, delay:1.6, ease:'power2.out',
+      onUpdate: function() {
+        el.textContent = Math.round(this.targets()[0].val).toLocaleString('id-ID');
+      }
+    });
+  });
+
+  /* Hero parallax exit */
+  mm.add('(min-width:769px)', () => {
+    gsap.to('#hero .hero__content', {
+      yPercent:40, opacity:.1, scale:.9, rotateX:5,
+      ease:'none',
+      scrollTrigger:{ trigger:'#hero', start:'top top', end:'bottom top', scrub:2 }
+    });
+    document.querySelectorAll('.ficon').forEach((icon, i) => {
+      const d = .3 + (i % 6) * .25;
+      gsap.to(icon, {
+        yPercent: -(20 + d * 65), rotateZ: d * 15,
+        ease:'none',
+        scrollTrigger:{ trigger:'#hero', start:'top top', end:'bottom top', scrub:d }
+      });
+    });
+    gsap.to('.hud-hex',    { yPercent:-25, rotateZ:15, ease:'none', scrollTrigger:{ trigger:'#hero', start:'top top', end:'bottom top', scrub:3 }});
+    gsap.to('.hud-corner', { yPercent:-15, ease:'none', scrollTrigger:{ trigger:'#hero', start:'top top', end:'bottom top', scrub:1.8 }});
+  });
+
+  /* ════════════════════════════════════════
+     ② ABOUT  — 3D Book-open effect
+     Left page flies in from left with Y-axis rotation
+     Right page flies from right
+  ════════════════════════════════════════ */
+  const aboutTL = gsap.timeline({
+    scrollTrigger:{
+      trigger:'#about .about__grid', start:'top 75%',
+      once:true
+    }
+  });
+
+  /* Section label/title */
+  aboutTL
+    .to('#about .gs-label', {
+      opacity:1, y:0, duration:.5, ease:'power2.out'
+    })
+    .to('#about .gs-title', {
+      opacity:1, y:0, skewX:0, duration:.85, ease:'expo.out'
+    }, '-=.2')
+    /* Avatar — book-page from left */
+    .to('.gs-avatar', {
+      opacity:1, x:0, rotateY:0, scale:1,
+      duration:1.1, ease:'power3.out',
+      transformPerspective:900
+    }, '-=.4')
+    /* Info text — from right */
+    .to('.gs-text', {
+      opacity:1, x:0, rotateY:0,
+      duration:.9, ease:'power2.out',
+      transformPerspective:900
+    }, '-=.7')
+    /* Info card flip up */
+    .to('.gs-card', {
+      opacity:1, y:0, rotateX:0,
+      duration:.7, ease:'back.out(1.8)',
+      transformPerspective:600
+    }, '-=.4')
+    /* Tags pop in with spin */
+    .to('.gs-tag', {
+      opacity:1, scale:1, rotateZ:0,
+      stagger:{ amount:.5, from:'random' },
+      duration:.5, ease:'back.out(2.5)'
+    }, '-=.3');
+
+  /* Social icons — orbit entrance */
+  gsap.set('.about__socials .about__social', { opacity:0, scale:0, rotateZ:-90 });
+  gsap.to('.about__socials .about__social', {
+    opacity:1, scale:1, rotateZ:0,
+    stagger:.07, duration:.5, ease:'back.out(2.2)',
+    scrollTrigger:{ trigger:'.about__socials', start:'top 88%', once:true }
+  });
+
+  /* About card 3D hover */
+  document.querySelectorAll('.about__card').forEach(card => {
+    card.addEventListener('mousemove', function(e) {
+      const r = this.getBoundingClientRect();
+      const dx = (e.clientX - r.left - r.width/2)  / (r.width/2);
+      const dy = (e.clientY - r.top  - r.height/2) / (r.height/2);
+      gsap.to(this, { rotateX:-dy*6, rotateY:dx*6, z:15, duration:.25, ease:'power2.out', transformPerspective:800 });
+    });
+    card.addEventListener('mouseleave', function() {
+      gsap.to(this, { rotateX:0, rotateY:0, z:0, duration:.5, ease:'elastic.out(1,.6)' });
+    });
+  });
+
+  /* ════════════════════════════════════════
+     ③ SKILLS  — Card deck deal effect
+     Cards dealt like playing cards from center
+  ════════════════════════════════════════ */
+  /* Tabs slide in */
+  gsap.to('#skills .gs-fade', {
+    opacity:1, y:0, stagger:.06, duration:.5, ease:'power2.out',
+    scrollTrigger:{ trigger:'#skills .skills__tabs', start:'top 88%', once:true }
+  });
+  gsap.to('#skills .gs-label', { opacity:1, y:0, duration:.5, ease:'power2.out', scrollTrigger:{ trigger:'#skills', start:'top 80%', once:true } });
+  gsap.to('#skills .gs-title', { opacity:1, y:0, skewX:0, duration:.85, ease:'expo.out', scrollTrigger:{ trigger:'#skills .gs-title', start:'top 85%', once:true } });
+
+  /* Skills cards — deck deal with rotateY */
+  ScrollTrigger.create({
+    trigger:'#skillsGrid', start:'top 83%', once:true,
+    onEnter: () => {
+      gsap.to('.gs-skill', {
+        opacity:1, y:0, scale:1, rotateX:0,
+        stagger:{
+          amount: isMob() ? .6 : 1.0,
+          from:'start',
+          ease:'power2.inOut'
+        },
+        duration:.55, ease:'back.out(1.6)',
+        onComplete: () => {
+          document.querySelectorAll('.skill-card__fill').forEach(bar => {
+            gsap.to(bar, { width:bar.dataset.width, duration:1.6, ease:'power2.out', delay:.05 });
+          });
+        }
       });
     }
   });
-}, { threshold: 0.1 });
-const skillsGrid = document.getElementById('skillsGrid');
-if (skillsGrid) observer.observe(skillsGrid);
 
-// Skills filter tabs
-document.querySelectorAll('.skills__tab').forEach(tab => {
-  tab.addEventListener('click', () => {
-    document.querySelectorAll('.skills__tab').forEach(t => t.classList.remove('skills__tab--active'));
-    tab.classList.add('skills__tab--active');
-    const filter = tab.dataset.filter;
-    document.querySelectorAll('.skill-card').forEach(card => {
-      card.style.display = (filter === 'all' || card.dataset.category === filter) ? 'flex' : 'none';
+  /* Skill 3D hover tilt */
+  document.querySelectorAll('.skill-card').forEach(card => {
+    card.addEventListener('mousemove', function(e) {
+      const r  = this.getBoundingClientRect();
+      const dx = (e.clientX - r.left - r.width/2)  / (r.width/2);
+      const dy = (e.clientY - r.top  - r.height/2) / (r.height/2);
+      gsap.to(this, {
+        rotateX:-dy*10, rotateY:dx*8, scale:1.04, z:30,
+        duration:.25, ease:'power2.out', transformPerspective:800
+      });
+    });
+    card.addEventListener('mouseleave', function() {
+      gsap.to(this, { rotateX:0, rotateY:0, scale:1, z:0, duration:.5, ease:'elastic.out(1,.6)' });
     });
   });
-});
+
+  /* Skills filter tab switching with 3D */
+  document.querySelectorAll('.skills__tab').forEach(tab => {
+    tab.addEventListener('click', () => {
+      document.querySelectorAll('.skills__tab').forEach(t => t.classList.remove('skills__tab--active'));
+      tab.classList.add('skills__tab--active');
+      const filter = tab.dataset.filter;
+      document.querySelectorAll('.skill-card').forEach((card, i) => {
+        const show = filter === 'all' || card.dataset.category === filter;
+        if (show) {
+          card.style.display = 'grid';
+          gsap.fromTo(card,
+            { opacity:0, rotateX:25, y:30, scale:.85 },
+            { opacity:1, rotateX:0, y:0, scale:1, duration:.45, delay:i*.03, ease:'back.out(1.6)' }
+          );
+        } else {
+          gsap.to(card, {
+            opacity:0, rotateX:-20, y:-20, scale:.8, duration:.25, ease:'power2.in',
+            onComplete:() => card.style.display = 'none'
+          });
+        }
+      });
+    });
+  });
+
+  /* ════════════════════════════════════════
+     ⑤ PROJECTS  — 3D cube face reveal
+     Each card rotates in from behind
+     like cube faces appearing
+  ════════════════════════════════════════ */
+  gsap.to('#projects .gs-label', { opacity:1, y:0, duration:.5, scrollTrigger:{ trigger:'#projects', start:'top 82%', once:true } });
+  gsap.to('#projects .gs-title', { opacity:1, y:0, skewX:0, duration:.85, ease:'expo.out', scrollTrigger:{ trigger:'#projects .gs-title', start:'top 85%', once:true } });
+
+  ScrollTrigger.create({
+    trigger:'#projectsGrid', start:'top 82%', once:true,
+    onEnter: () => {
+      gsap.to('.gs-project', {
+        opacity:1, y:0, scale:1, rotateX:0,
+        stagger:{ amount:.8, from:'start' },
+        duration:.9, ease:'expo.out'
+      });
+    }
+  });
+
+  /* Project card — full 3D mouse track */
+  document.querySelectorAll('.project-card').forEach(card => {
+    let bounds;
+    card.addEventListener('mouseenter', function() {
+      bounds = this.getBoundingClientRect();
+      gsap.to(this, { z:40, duration:.3, ease:'power2.out' });
+    });
+    card.addEventListener('mousemove', function(e) {
+      if (!bounds) bounds = this.getBoundingClientRect();
+      const dx = (e.clientX - bounds.left - bounds.width/2)  / (bounds.width/2);
+      const dy = (e.clientY - bounds.top  - bounds.height/2) / (bounds.height/2);
+      gsap.to(this, {
+        rotateX: -dy * 12, rotateY: dx * 12, scale:1.04,
+        duration:.2, ease:'power2.out', transformPerspective:1000,
+        boxShadow: `${-dx*15}px ${-dy*10}px 40px rgba(0,0,0,.5), 0 0 30px rgba(139,92,246,.2)`
+      });
+      /* Shine effect */
+      const overlay = this.querySelector('.project-card__overlay');
+      if (overlay) {
+        gsap.to(overlay, {
+          background: `radial-gradient(circle at ${((dx+1)/2*100)}% ${((dy+1)/2*100)}%, rgba(255,255,255,.06) 0%, rgba(2,2,10,.8) 60%)`,
+          duration:.1
+        });
+      }
+    });
+    card.addEventListener('mouseleave', function() {
+      bounds = null;
+      gsap.to(this, {
+        rotateX:0, rotateY:0, scale:1, z:0,
+        boxShadow:'', duration:.6, ease:'elastic.out(1,.55)'
+      });
+    });
+  });
+
+  /* ════════════════════════════════════════
+     ⑥ EDUCATION  — Flip card entrance
+     Education cards flip up from bottom (rotateX)
+     Certificate cards flip from back (rotateY)
+  ════════════════════════════════════════ */
+  gsap.to('#education .gs-label', { opacity:1, y:0, duration:.5, scrollTrigger:{ trigger:'#education', start:'top 82%', once:true } });
+  gsap.to('#education .gs-title', { opacity:1, y:0, skewX:0, duration:.85, ease:'expo.out', scrollTrigger:{ trigger:'#education .gs-title', start:'top 85%', once:true } });
+
+  gsap.to('.gs-sub', {
+    opacity:1, x:0, stagger:.12, duration:.6, ease:'power3.out',
+    scrollTrigger:{ trigger:'#education .edu-cert__grid', start:'top 84%', once:true }
+  });
+  gsap.to('.gs-edu', {
+    opacity:1, x:0, rotateY:0,
+    stagger:.16, duration:.7, ease:'power3.out',
+    transformPerspective:800,
+    scrollTrigger:{ trigger:'#education .edu-cert__grid', start:'top 82%', once:true }
+  });
+  gsap.to('.gs-cert', {
+    opacity:1, y:0, scale:1, rotateX:0,
+    stagger:.1, duration:.6, ease:'back.out(1.8)',
+    scrollTrigger:{ trigger:'.cert__grid', start:'top 84%', once:true }
+  });
+
+  /* Cert card hover */
+  document.querySelectorAll('.cert-card').forEach(card => {
+    card.addEventListener('mouseenter', () => {
+      gsap.to(card, { y:-8, scale:1.03, rotateX:-4, duration:.3, ease:'power2.out', transformPerspective:800 });
+    });
+    card.addEventListener('mouseleave', () => {
+      gsap.to(card, { y:0, scale:1, rotateX:0, duration:.4, ease:'elastic.out(1,.6)' });
+    });
+  });
+
+  /* ════════════════════════════════════════
+     ⑧ TESTIMONIALS  — Fan of cards
+     Cards appear like a hand of playing cards
+     fanning out from center with rotateZ stagger
+  ════════════════════════════════════════ */
+  gsap.to('#testimonials .gs-label', { opacity:1, y:0, duration:.5, scrollTrigger:{ trigger:'#testimonials', start:'top 82%', once:true } });
+  gsap.to('#testimonials .gs-title', { opacity:1, y:0, skewX:0, duration:.85, ease:'expo.out', scrollTrigger:{ trigger:'#testimonials .gs-title', start:'top 85%', once:true } });
+
+  const testiCards = document.querySelectorAll('.gs-testi');
+  const total      = testiCards.length;
+
+  ScrollTrigger.create({
+    trigger:'#testimonialsGrid', start:'top 83%', once:true,
+    onEnter: () => {
+      /* Phase 1: appear stacked/fanned */
+      testiCards.forEach((card, i) => {
+        const mid  = (total - 1) / 2;
+        const dist = i - mid;
+        gsap.fromTo(card,
+          { opacity:0, y:80, rotateX:20, rotateZ: dist * 8, scale:.7,
+            transformOrigin:'bottom center' },
+          { opacity:1, y:0, rotateX:0, rotateZ:0, scale:1,
+            duration:1, delay: i * .1, ease:'expo.out',
+            transformPerspective:900,
+            transformOrigin:'bottom center'
+          }
+        );
+      });
+    }
+  });
+
+  /* Testimonial card 3D hover */
+  document.querySelectorAll('.testi-card').forEach(card => {
+    card.addEventListener('mousemove', function(e) {
+      const r  = this.getBoundingClientRect();
+      const dx = (e.clientX - r.left - r.width/2)  / (r.width/2);
+      const dy = (e.clientY - r.top  - r.height/2) / (r.height/2);
+      gsap.to(this, {
+        rotateX:-dy*8, rotateY:dx*8, scale:1.03, z:20,
+        duration:.25, ease:'power2.out', transformPerspective:900
+      });
+    });
+    card.addEventListener('mouseleave', function() {
+      gsap.to(this, { rotateX:0, rotateY:0, scale:1, z:0, duration:.5, ease:'elastic.out(1,.6)' });
+    });
+  });
+
+  /* ════════════════════════════════════════
+     ⑨ BLOG  — Newspaper printing effect
+     Cards appear as if printed/stamped
+  ════════════════════════════════════════ */
+  gsap.to('#blog .gs-label', { opacity:1, y:0, duration:.5, scrollTrigger:{ trigger:'#blog', start:'top 82%', once:true } });
+  gsap.to('#blog .gs-title', { opacity:1, y:0, skewX:0, duration:.85, ease:'expo.out', scrollTrigger:{ trigger:'#blog .gs-title', start:'top 85%', once:true } });
+
+  ScrollTrigger.create({
+    trigger:'.blog-preview-grid', start:'top 82%', once:true,
+    onEnter: () => {
+      gsap.to('.gs-blog', {
+        opacity:1, y:0, scale:1, rotateX:0,
+        stagger:{ amount:.5, from:'center' },
+        duration:.8, ease:'back.out(1.5)'
+      });
+    }
+  });
+
+  /* Blog card hover */
+  document.querySelectorAll('.blog-card').forEach(card => {
+    card.addEventListener('mouseenter', () => {
+      gsap.to(card, { y:-7, scale:1.02, rotateX:-3, duration:.3, ease:'power2.out', transformPerspective:800 });
+    });
+    card.addEventListener('mouseleave', () => {
+      gsap.to(card, { y:0, scale:1, rotateX:0, duration:.4, ease:'elastic.out(1,.6)' });
+    });
+  });
+
+  gsap.to('.gs-fade', {
+    opacity:1, y:0, duration:.6, ease:'power2.out',
+    scrollTrigger:{ trigger:'.blog-preview-empty', start:'top 85%' }
+  });
+
+  /* ════════════════════════════════════════
+     ⑩ CONTACT  — Vault door split open
+     Left panel slides from left
+     Right form slides from right
+     With 3D rotateY like vault doors opening
+  ════════════════════════════════════════ */
+  gsap.to('#contact .gs-label', { opacity:1, y:0, duration:.5, scrollTrigger:{ trigger:'#contact', start:'top 82%', once:true } });
+  gsap.to('#contact .gs-title', { opacity:1, y:0, skewX:0, duration:.85, ease:'expo.out', scrollTrigger:{ trigger:'#contact .gs-title', start:'top 85%', once:true } });
+
+  const ctTL = gsap.timeline({
+    scrollTrigger:{ trigger:'#contact .contact__grid', start:'top 78%', once:true }
+  });
+  ctTL
+    .to('.gs-contact-info', {
+      opacity:1, x:0, rotateY:0, duration:1, ease:'power3.out',
+      transformPerspective:1000
+    })
+    .to('.gs-contact-form', {
+      opacity:1, x:0, rotateY:0, duration:1, ease:'power3.out',
+      transformPerspective:1000
+    }, '-=.6');
+
+  /* Form input focus glow */
+  document.querySelectorAll('.contact__form .form__input').forEach(inp => {
+    inp.addEventListener('focus', () => {
+      gsap.to(inp, { scale:1.01, duration:.2, ease:'power2.out' });
+    });
+    inp.addEventListener('blur', () => {
+      gsap.to(inp, { scale:1, duration:.3, ease:'elastic.out(1,.6)' });
+    });
+  });
+
+  /* ════════════════════════════════════════
+     FLOAT BUTTONS
+  ════════════════════════════════════════ */
+  const scrollBtn = document.getElementById('scrollTop');
+  const waBtn     = document.getElementById('waFloat');
+  const ring      = document.getElementById('scrollRing');
+
+  ScrollTrigger.create({
+    start: 450,
+    onEnter: () => {
+      if(scrollBtn) gsap.to(scrollBtn, { opacity:1, y:0, visibility:'visible', duration:.5, ease:'back.out(2)' });
+      if(waBtn)     gsap.to(waBtn,     { opacity:1, y:0, visibility:'visible', duration:.5, delay:.15, ease:'back.out(2)' });
+    },
+    onLeaveBack: () => {
+      if(scrollBtn) gsap.to(scrollBtn, { opacity:0, y:25, duration:.3 });
+      if(waBtn)     gsap.to(waBtn,     { opacity:0, y:25, duration:.3 });
+    }
+  });
+
+  ScrollTrigger.create({
+    start:'top top', end:'max',
+    onUpdate: self => {
+      if(ring) ring.style.strokeDashoffset = 138 * (1 - self.progress);
+    }
+  });
+
+  scrollBtn?.addEventListener('click', () => {
+    gsap.to(scrollBtn, { scale:.85, duration:.1, yoyo:true, repeat:1 });
+    gsap.to(window, { duration:1.2, scrollTo:0, ease:'expo.inOut' });
+  });
+
+  /* ════════════════════════════════════════
+     FOOTER ENTRANCE
+  ════════════════════════════════════════ */
+  gsap.from('.footer__inner > *', {
+    opacity:0, y:25, rotateX:-10, stagger:.12, duration:.7, ease:'power3.out',
+    transformPerspective:600,
+    scrollTrigger:{ trigger:'.footer', start:'top 93%', once:true }
+  });
+
+  /* ════════════════════════════════════════
+     MAGNETIC BUTTONS (desktop)
+  ════════════════════════════════════════ */
+  mm.add('(min-width:769px)', () => {
+    document.querySelectorAll('.btn--primary, .btn--outline, .btn--cv').forEach(btn => {
+      btn.addEventListener('mousemove', function(e) {
+        const r  = this.getBoundingClientRect();
+        const dx = (e.clientX - r.left - r.width/2)  / (r.width/2);
+        const dy = (e.clientY - r.top  - r.height/2) / (r.height/2);
+        gsap.to(this, {
+          x:dx*8, y:dy*5, scale:1.06,
+          duration:.25, ease:'power2.out'
+        });
+      });
+      btn.addEventListener('mouseleave', function() {
+        gsap.to(this, { x:0, y:0, scale:1, duration:.4, ease:'elastic.out(1,.6)' });
+      });
+    });
+  });
+
+  /* ════════════════════════════════════════
+     CURSOR GLOW (desktop)
+  ════════════════════════════════════════ */
+  mm.add('(min-width:769px)', () => {
+    const glow = document.createElement('div');
+    Object.assign(glow.style, {
+      position:'fixed', width:'320px', height:'320px', borderRadius:'50%',
+      background:'radial-gradient(circle,rgba(139,92,246,.055) 0%,transparent 70%)',
+      pointerEvents:'none', zIndex:'0', transform:'translate(-50%,-50%)',
+    });
+    document.body.appendChild(glow);
+    window.addEventListener('mousemove', e => {
+      gsap.to(glow, { x:e.clientX, y:e.clientY, duration:.7, ease:'power2.out' });
+    });
+  });
+
+  /* ════════════════════════════════════════
+     CV BUTTON FEEDBACK
+  ════════════════════════════════════════ */
+  const cvBtn = document.getElementById('downloadCvBtn');
+  cvBtn?.addEventListener('click', () => {
+    gsap.timeline()
+      .to(cvBtn, { scale:.88, rotateX:-10, duration:.1, ease:'power2.in', transformPerspective:400 })
+      .to(cvBtn, { scale:1, rotateX:0, duration:.4, ease:'back.out(2)' });
+    const orig = cvBtn.innerHTML;
+    setTimeout(() => {
+      cvBtn.innerHTML = '<i class="fas fa-check"></i> <span>Downloaded!</span>';
+      cvBtn.style.color = 'var(--green)'; cvBtn.style.borderColor = 'var(--green)';
+      setTimeout(() => { cvBtn.innerHTML = orig; cvBtn.style.color=''; cvBtn.style.borderColor=''; }, 2600);
+    }, 200);
+  });
+
+
+  /* ════════════════════════════════════════
+     DARK / LIGHT MODE  — Toggle System
+  ════════════════════════════════════════ */
+  // Show float theme button with scroll
+  ScrollTrigger.create({
+    start: 450,
+    onEnter: () => {
+      const fb = document.getElementById('themeToggleFloat');
+      if (fb) {
+        fb.classList.add('visible');
+        gsap.to(fb, { opacity:1, y:0, visibility:'visible', duration:.5, ease:'back.out(2)' });
+      }
+    },
+    onLeaveBack: () => {
+      const fb = document.getElementById('themeToggleFloat');
+      if (fb) {
+        fb.classList.remove('visible');
+        gsap.to(fb, { opacity:0, y:20, duration:.3 });
+      }
+    }
+  });
+
+
+  /* ════════════════════════════════════════
+     3D INTERACTIVE AVATAR — Drag & Mouse
+  ════════════════════════════════════════ */
+  (function init3DAvatar() {
+    const scene = document.getElementById('avatar3dScene');
+    const card  = document.getElementById('avatar3dCard');
+    const shine = document.getElementById('avatar3dShine');
+    if (!card) return;
+
+    let isDragging  = false;
+    let startX = 0, startY = 0;
+    let rotX   = -8, rotY = 12;   // initial lean
+    let velX   = 0,  velY = 0;
+    let rafId  = null;
+    let isHovering = false;
+
+    // Clamp helper
+    const clamp = (v, min, max) => Math.min(Math.max(v, min), max);
+
+    // Apply transform
+    function applyTransform(rx, ry, scale = 1) {
+      gsap.to(card, {
+        rotateX: rx, rotateY: ry, scale: scale,
+        duration: isDragging ? 0 : .25,
+        ease: 'power2.out',
+        transformPerspective: 800,
+        transformOrigin: 'center center',
+        overwrite: true
+      });
+      // Shine follows mouse angle
+      if (shine) {
+        const sx = ((ry + 30) / 60) * 100;
+        const sy = ((-rx + 30) / 60) * 100;
+        gsap.set(shine, {
+          background: `radial-gradient(circle at ${sx}% ${sy}%, rgba(255,255,255,.13) 0%, transparent 55%)`,
+          opacity: isHovering ? 1 : 0
+        });
+      }
+    }
+
+    // Inertia loop
+    function inertiaLoop() {
+      if (!isDragging) {
+        velX *= 0.88;
+        velY *= 0.88;
+        if (Math.abs(velX) < 0.05 && Math.abs(velY) < 0.05) {
+          // Spring back to idle
+          rotX += ((-8) - rotX) * 0.08;
+          rotY += ((12) - rotY) * 0.08;
+          if (Math.abs(rotX - (-8)) < 0.1 && Math.abs(rotY - 12) < 0.1) {
+            cancelAnimationFrame(rafId);
+            rafId = null;
+            applyTransform(-8, 12);
+            return;
+          }
+        } else {
+          rotX += velX;
+          rotY += velY;
+        }
+        rotX = clamp(rotX, -35, 35);
+        rotY = clamp(rotY, -40, 40);
+        applyTransform(rotX, rotY);
+      }
+      rafId = requestAnimationFrame(inertiaLoop);
+    }
+
+    // ── MOUSE/DESKTOP events ──
+    scene.addEventListener('mouseenter', () => {
+      isHovering = true;
+      gsap.to(card, { scale: 1.04, duration: .4, ease: 'power2.out' });
+    });
+
+    scene.addEventListener('mousemove', e => {
+      if (isDragging) return;
+      const r  = card.getBoundingClientRect();
+      const cx = r.left + r.width  / 2;
+      const cy = r.top  + r.height / 2;
+      const dx = (e.clientX - cx) / (r.width  / 2);
+      const dy = (e.clientY - cy) / (r.height / 2);
+      const targetX = -dy * 18;
+      const targetY =  dx * 22;
+      rotX = targetX; rotY = targetY;
+      applyTransform(rotX, rotY, 1.04);
+    });
+
+    scene.addEventListener('mouseleave', () => {
+      isHovering = false;
+      isDragging = false;
+      velX = 0; velY = 0;
+      if (!rafId) rafId = requestAnimationFrame(inertiaLoop);
+    });
+
+    // ── DRAG (click + drag) ──
+    scene.addEventListener('mousedown', e => {
+      isDragging = true;
+      startX = e.clientX;
+      startY = e.clientY;
+      if (!rafId) rafId = requestAnimationFrame(inertiaLoop);
+      e.preventDefault();
+    });
+
+    window.addEventListener('mousemove', e => {
+      if (!isDragging) return;
+      const dx = e.clientX - startX;
+      const dy = e.clientY - startY;
+      velY =  dx * 0.35;
+      velX = -dy * 0.35;
+      rotX = clamp(rotX + velX, -40, 40);
+      rotY = clamp(rotY + velY, -45, 45);
+      startX = e.clientX;
+      startY = e.clientY;
+      applyTransform(rotX, rotY, 1.05);
+    });
+
+    window.addEventListener('mouseup', () => {
+      if (!isDragging) return;
+      isDragging = false;
+      if (!rafId) rafId = requestAnimationFrame(inertiaLoop);
+    });
+
+    // ── TOUCH (mobile) ──
+    scene.addEventListener('touchstart', e => {
+      isDragging = true;
+      startX = e.touches[0].clientX;
+      startY = e.touches[0].clientY;
+      if (!rafId) rafId = requestAnimationFrame(inertiaLoop);
+      e.preventDefault();
+    }, { passive: false });
+
+    scene.addEventListener('touchmove', e => {
+      if (!isDragging) return;
+      const dx = e.touches[0].clientX - startX;
+      const dy = e.touches[0].clientY - startY;
+      velY =  dx * 0.4;
+      velX = -dy * 0.4;
+      rotX = clamp(rotX + velX, -40, 40);
+      rotY = clamp(rotY + velY, -45, 45);
+      startX = e.touches[0].clientX;
+      startY = e.touches[0].clientY;
+      applyTransform(rotX, rotY, 1.04);
+      e.preventDefault();
+    }, { passive: false });
+
+    scene.addEventListener('touchend', () => {
+      isDragging = false;
+      if (!rafId) rafId = requestAnimationFrame(inertiaLoop);
+    });
+
+    // ── DOUBLE CLICK — spin 360° ──
+    scene.addEventListener('dblclick', () => {
+      gsap.to(card, {
+        rotateY: rotY + 360,
+        duration: 1.2,
+        ease: 'power2.inOut',
+        transformPerspective: 800,
+        onComplete: () => { rotY = (rotY + 360) % 360; }
+      });
+    });
+
+    // ── Initial entrance animation ──
+    gsap.fromTo(card,
+      { rotateX: -25, rotateY: 35, scale: .7, opacity: 0 },
+      {
+        rotateX: -8, rotateY: 12, scale: 1, opacity: 1,
+        duration: 1.4, ease: 'expo.out',
+        transformPerspective: 800,
+        delay: .8
+      }
+    );
+
+    // ── Auto float idle animation ──
+    gsap.to({}, {
+      duration: 6,
+      repeat: -1,
+      yoyo: true,
+      ease: 'sine.inOut',
+      onUpdate: function() {
+        if (!isDragging && !isHovering && !rafId) {
+          const t = this.progress();
+          const idleRY = 12 + Math.sin(t * Math.PI * 2) * 5;
+          const idleRX = -8 + Math.cos(t * Math.PI) * 3;
+          gsap.set(card, {
+            rotateX: idleRX, rotateY: idleRY,
+            transformPerspective: 800
+          });
+        }
+      }
+    });
+  })();
+
+  /* ════════════════════════════════════════
+     RESIZE REFRESH
+  ════════════════════════════════════════ */
+  window.addEventListener('resize', () => ScrollTrigger.refresh());
+
+}); // end DOMContentLoaded
 </script>
 {% endblock %}

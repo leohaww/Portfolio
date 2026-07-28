@@ -66,12 +66,6 @@ app.config["ALLOWED_EXTENSIONS"] = {"png", "jpg", "jpeg", "gif", "webp", "pdf", 
 os.makedirs(app.config["UPLOAD_FOLDER"], exist_ok=True)
 
 # ─────────────────────────────────────────────
-#  Init DB (needed for Gunicorn)
-# ─────────────────────────────────────────────
-with app.app_context():
-    init_db()
-
-# ─────────────────────────────────────────────
 #  Helpers
 # ─────────────────────────────────────────────
 def allowed_file(filename):
@@ -1389,6 +1383,8 @@ def api_upload_media():
 #  Bootstrap
 # ─────────────────────────────────────────────
 if __name__ == "__main__":
+    with app.app_context():
+        init_db()
     load_translations()
     # Pakai port khusus Flask supaya tidak tabrakan dengan web app lain
     # (hindari ikut-ikutan env PORT global yang mungkin milik app lain)

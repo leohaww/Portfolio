@@ -1,0 +1,1142 @@
+{% extends "base.html" %}
+{% block title %}{{ 'Edit' if action == 'edit' else 'New' }} Article — Admin{% endblock %}
+{% block body_class %}admin-page blog-editor-page{% endblock %}
+
+{% block layout %}
+{% include "partials/admin_sidebar.html" %}
+
+<div class="admin__main">
+  {% include "partials/admin_topbar.html" %}
+
+  <div class="admin__content blog-editor">
+
+    <!-- ── Page Header ──────────────────────── -->
+    <div class="page-header">
+      <div>
+        <h1 class="page-header__title">
+          <i class="fas {% if action == 'edit' %}fa-pen-to-square{% else %}fa-file-pen{% endif %}"
+             style="color:var(--plasma)"></i>
+          {{ 'Edit Article' if action == 'edit' else 'Write New Article' }}
+        </h1>
+        <p class="page-header__sub">
+          {% if action == 'edit' and post %}
+            Last updated: <span class="mono" style="color:var(--cyan)">{{ post.updated_at[:16] if post.updated_at else post.created_at[:16] }}</span>
+          {% else %}
+            Tulis artikel &amp; upload file/folder langsung ke konten
+          {% endif %}
+        </p>
+      </div>
+      <div class="page-header__actions">
+        <a href="{{ url_for('admin_blog') }}" class="btn btn--ghost btn--sm">
+          <i class="fas fa-arrow-left"></i> Back
+        </a>
+        {% if action == 'edit' and post and post.status == 'published' %}
+        <a href="{{ url_for('blog_post', slug=post.slug) }}" target="_blank" class="btn btn--ghost btn--sm">
+          <i class="fas fa-eye"></i> View Live
+        </a>
+        {% endif %}
+      </div>
+    </div>
+
+    <!-- ── Main Form ─────────────────────────── -->
+    <form method="POST" enctype="multipart/form-data" id="blogForm"
+          action="{{ url_for('admin_edit_blog', pid=post.id) if action == 'edit' else url_for('admin_create_blog') }}">
+
+      <!-- Hidden content field (synced from editor) -->
+      <input type="hidden" name="content"   id="contentHidden"   value="{{ post.content   if post else '' }}"/>
+      <input type="hidden" name="tags"      id="tagsHidden"       value="{{ post.tags      if post else '' }}"/>
+      <input type="hidden" name="read_time" id="readTimeHidden"   value="{{ post.read_time if post else '5' }}"/>
+
+      <div class="blog-editor__layout">
+
+        <!-- ══════════════════════════════════
+             LEFT  — Main editor
+        ══════════════════════════════════ -->
+        <div class="blog-editor__main">
+
+          <!-- Title -->
+          <div class="bcard">
+            <label class="bcard__label"><i class="fas fa-heading"></i> Article Title <span class="req"></span></label>
+            <input type="text" name="title" id="articleTitle"
+                   class="title-input"
+                   value="{{ post.title if post else '' }}"
+                   placeholder="Write a compelling title..."
+                   required autocomplete="off"
+                   oninput="onTitleChange(this.value)"/>
+            <div class="bcard__meta">
+              <span id="titleCC" class="cc">0 / 80</span>
+              <span id="slugPrev" class="slug-prev"></span>
+            </div>
+          </div>
+
+          <!-- Excerpt -->
+          <div class="bcard">
+            <label class="bcard__label">
+              <i class="fas fa-align-left"></i> Excerpt
+              <span class="hint">Ringkasan yang tampil di listing</span>
+            </label>
+            <textarea name="excerpt" id="articleExcerpt"
+                      class="excerpt-input" maxlength="220"
+                      placeholder="Ringkasan singkat artikel (max 220 karakter)..."
+                      oninput="onExcerptChange(this.value)">{{ post.excerpt if post else '' }}</textarea>
+            <div class="bcard__meta">
+              <span id="excerptCC" class="cc">0 / 220</span>
+            </div>
+          </div>
+
+          <!-- ── CONTENT EDITOR ─────────────── -->
+          <div class="bcard editor-bcard">
+
+            <!-- Editor Header -->
+            <div class="editor-head">
+              <div class="editor-head__left">
+                <i class="fas fa-pen-nib" style="color:var(--plasma)"></i>
+                <span class="bcard__label" style="margin:0">Content</span>
+              </div>
+              <div class="editor-head__right">
+                <span id="wordCountBadge" class="wc-badge">0 words</span>
+                <div class="mode-toggle">
+                  <button type="button" class="mode-btn active" id="btnVisual" onclick="setMode('visual')">
+                    <i class="fas fa-eye"></i> Visual
+                  </button>
+                  <button type="button" class="mode-btn" id="btnHtml" onclick="setMode('html')">
+                    <i class="fas fa-code"></i> HTML
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <!-- Toolbar -->
+            <div class="editor-bar" id="editorBar">
+              <div class="bar-group">
+                <button type="button" class="tb" onclick="cmd('formatBlock','H2')" title="Heading 2">H2</button>
+                <button type="button" class="tb" onclick="cmd('formatBlock','H3')" title="Heading 3">H3</button>
+                <button type="button" class="tb" onclick="cmd('formatBlock','P')" title="Paragraph">¶</button>
+              </div>
+              <div class="bar-sep"></div>
+              <div class="bar-group">
+                <button type="button" class="tb" onclick="cmd('bold')"          title="Bold"><b>B</b></button>
+                <button type="button" class="tb" onclick="cmd('italic')"        title="Italic"><i>I</i></button>
+                <button type="button" class="tb" onclick="cmd('underline')"     title="Underline"><u>U</u></button>
+              </div>
+              <div class="bar-sep"></div>
+              <div class="bar-group">
+                <button type="button" class="tb" onclick="cmd('insertUnorderedList')" title="Bullet List"><i class="fas fa-list-ul"></i></button>
+                <button type="button" class="tb" onclick="cmd('insertOrderedList')"   title="Numbered List"><i class="fas fa-list-ol"></i></button>
+              </div>
+              <div class="bar-sep"></div>
+              <div class="bar-group">
+                <button type="button" class="tb" onclick="cmd('justifyLeft')"   title="Left"><i class="fas fa-align-left"></i></button>
+                <button type="button" class="tb" onclick="cmd('justifyCenter')" title="Center"><i class="fas fa-align-center"></i></button>
+                <button type="button" class="tb" onclick="cmd('justifyRight')"  title="Right"><i class="fas fa-align-right"></i></button>
+              </div>
+              <div class="bar-sep"></div>
+              <div class="bar-group">
+                <button type="button" class="tb tb--accent" onclick="openLinkModal()"   title="Insert Link"><i class="fas fa-link"></i></button>
+                <button type="button" class="tb tb--accent" onclick="openMediaPanel()"  title="Insert Media / Upload Folder"><i class="fas fa-folder-open"></i></button>
+                <button type="button" class="tb" onclick="insertCode()"  title="Code Block"><i class="fas fa-code"></i></button>
+                <button type="button" class="tb" onclick="insertQuote()" title="Blockquote"><i class="fas fa-quote-left"></i></button>
+                <button type="button" class="tb" onclick="insertHR()"    title="Divider"><i class="fas fa-minus"></i></button>
+              </div>
+              <div class="bar-sep"></div>
+              <div class="bar-group">
+                <button type="button" class="tb" onclick="cmd('undo')" title="Undo"><i class="fas fa-rotate-left"></i></button>
+                <button type="button" class="tb" onclick="cmd('redo')" title="Redo"><i class="fas fa-rotate-right"></i></button>
+              </div>
+            </div>
+
+            <!-- Visual Editor -->
+            <div id="visualEditor" class="visual-ed prose-ed"
+                 contenteditable="true" spellcheck="true"
+                 data-ph="Start writing your article here...">{{ post.content | safe if post and post.content else '' }}</div>
+
+            <!-- HTML Editor -->
+            <textarea id="htmlEditor" class="html-ed" style="display:none"
+                      placeholder="<h2>Heading</h2>&#10;<p>Content...</p>">{{ post.content if post and post.content else '' }}</textarea>
+
+          </div><!-- /editor-bcard -->
+
+          <!-- ── MEDIA / FOLDER UPLOAD PANEL ───── -->
+          <div class="media-panel" id="mediaPanel" style="display:none">
+            <div class="media-panel__head">
+              <span><i class="fas fa-folder-open" style="color:var(--gold)"></i> Media Library</span>
+              <button type="button" class="media-panel__close" onclick="closeMediaPanel()">
+                <i class="fas fa-times"></i>
+              </button>
+            </div>
+
+            <!-- Upload Zone -->
+            <div class="media-upload-zone" id="mediaDropZone"
+                 ondragover="mediaDragOver(event)"
+                 ondragleave="mediaDragLeave(event)"
+                 ondrop="mediaDrop(event)">
+              <div class="media-upload-inner">
+                <div class="media-upload-icon"><i class="fas fa-cloud-arrow-up"></i></div>
+                <p class="media-upload-title">Drag &amp; drop files or entire folder</p>
+                <p class="media-upload-sub">Images, videos, PDFs, documents — all at once</p>
+                <div class="media-upload-btns">
+                  <button type="button" class="btn btn--primary btn--sm" onclick="document.getElementById('mediaFilesInput').click()">
+                    <i class="fas fa-file-image"></i> Select Files
+                  </button>
+                  <button type="button" class="btn btn--outline btn--sm" onclick="document.getElementById('mediaFolderInput').click()">
+                    <i class="fas fa-folder-plus"></i> Upload Folder
+                  </button>
+                </div>
+              </div>
+              <!-- Hidden inputs -->
+              <input type="file" id="mediaFilesInput"  multiple accept="image/*,video/*,.pdf,.doc,.docx"
+                     style="display:none" onchange="handleMediaFiles(this.files)"/>
+              <input type="file" id="mediaFolderInput" multiple webkitdirectory mozdirectory
+                     style="display:none" onchange="handleMediaFiles(this.files)"/>
+            </div>
+
+            <!-- Upload Progress -->
+            <div class="media-progress" id="mediaProgress" style="display:none">
+              <div class="media-progress__bar-wrap">
+                <div class="media-progress__bar" id="mediaProgressBar"></div>
+              </div>
+              <span class="media-progress__label" id="mediaProgressLabel">Uploading...</span>
+            </div>
+
+            <!-- Media Grid -->
+            <div class="media-grid-header" id="mediaGridHeader" style="display:none">
+              <span id="mediaGridCount"></span>
+              <div style="display:flex;gap:.5rem">
+                <button type="button" class="btn btn--ghost btn--xs" onclick="insertAllMedia()">
+                  <i class="fas fa-plus"></i> Insert All
+                </button>
+                <button type="button" class="btn btn--danger btn--xs" onclick="clearAllMedia()">
+                  <i class="fas fa-trash"></i> Clear
+                </button>
+              </div>
+            </div>
+            <div class="media-grid" id="mediaGrid"></div>
+
+          </div><!-- /media-panel -->
+
+        </div><!-- /blog-editor__main -->
+
+        <!-- ══════════════════════════════════
+             RIGHT  — Sidebar
+        ══════════════════════════════════ -->
+        <aside class="blog-editor__sidebar">
+
+          <!-- Publish -->
+          <div class="scard">
+            <div class="scard__head"><i class="fas fa-rocket" style="color:var(--plasma)"></i> Publish</div>
+            <div class="scard__body">
+              <div class="form__group">
+                <label class="form__label">Status</label>
+                <div class="status-row">
+                  {% for sv,si,sl,sc in [('draft','fa-pencil','Draft','draft'),('published','fa-circle-check','Published','pub'),('archived','fa-box-archive','Archived','arch')] %}
+                  <label class="sopt sopt--{{ sc }}">
+                    <input type="radio" name="status" value="{{ sv }}"
+                           {% if post and post.status == sv %}checked{% elif not post and sv == 'draft' %}checked{% endif %}/>
+                    <span><i class="fas {{ si }}"></i> {{ sl }}</span>
+                  </label>
+                  {% endfor %}
+                </div>
+              </div>
+              <div class="form__group">
+                <label class="form__label">Category</label>
+                <select name="category" class="form__input form__select">
+                  {% for cat in ['Tech','Tutorial','Case Study','Career','Opinion','DevOps','Frontend','Backend','AI/ML'] %}
+                  <option value="{{ cat }}" {% if post and post.category == cat %}selected{% elif not post and cat == 'Tech' %}selected{% endif %}>{{ cat }}</option>
+                  {% endfor %}
+                </select>
+              </div>
+              <div class="form__row">
+                <div class="form__group">
+                  <label class="form__label">Read Time (min)</label>
+                  <input type="number" id="readTimeDisplay" class="form__input" value="{{ post.read_time if post else 5 }}" min="1" max="120" onchange="document.getElementById('readTimeHidden').value=this.value"/>
+                </div>
+                <div class="form__group" style="display:flex;align-items:flex-end;padding-bottom:.15rem">
+                  <label class="form__checkbox-label">
+                    <input type="checkbox" name="is_featured" value="1" {% if post and post.is_featured %}checked{% endif %}/>
+                    <span style="font-size:.82rem">⭐ Featured</span>
+                  </label>
+                </div>
+              </div>
+              <button type="submit" class="btn btn--primary btn--full" id="publishBtn">
+                <i class="fas fa-save"></i>
+                {{ 'Update Article' if action == 'edit' else 'Publish Article' }}
+              </button>
+              <button type="button" class="btn btn--ghost btn--full" onclick="saveDraft()" style="margin-top:.45rem;font-size:.82rem">
+                <i class="fas fa-floppy-disk"></i> Save as Draft
+              </button>
+            </div>
+          </div>
+
+          <!-- Cover Image -->
+          <div class="scard">
+            <div class="scard__head"><i class="fas fa-image" style="color:var(--cyan)"></i> Cover Image</div>
+            <div class="scard__body" style="padding-top:.75rem">
+              <div class="cover-zone" id="coverZone"
+                   onclick="document.getElementById('coverInput').click()"
+                   ondragover="coverDragOver(event)"
+                   ondragleave="coverDragLeave(event)"
+                   ondrop="coverDrop(event)">
+                {% if post and post.cover_image %}
+                <div class="cover-preview" id="coverPreview">
+                  <img src="{{ url_for('static', filename=post.cover_image) }}" id="coverImg" alt="Cover"/>
+                  <button type="button" class="cover-del" onclick="removeCover(event)"><i class="fas fa-times"></i></button>
+                </div>
+                {% else %}
+                <div class="cover-placeholder" id="coverPlaceholder">
+                  <i class="fas fa-cloud-arrow-up"></i>
+                  <p>Drag &amp; drop or click</p>
+                  <small>JPG, PNG, WebP — auto-optimized</small>
+                </div>
+                {% endif %}
+              </div>
+              <input type="file" name="cover_image" id="coverInput" accept="image/*"
+                     style="display:none" onchange="previewCover(this)"/>
+            </div>
+          </div>
+
+          <!-- Tags -->
+          <div class="scard">
+            <div class="scard__head"><i class="fas fa-tags" style="color:var(--gold)"></i> Tags</div>
+            <div class="scard__body" style="padding-top:.75rem">
+              <div class="tags-box" id="tagsBox" onclick="document.getElementById('tagInput').focus()">
+                <div id="tagPills"></div>
+                <input type="text" id="tagInput" class="tag-input"
+                       placeholder="Add tag, press Enter..."
+                       onkeydown="tagKeydown(event)"/>
+              </div>
+              <p class="smeta"><i class="fas fa-keyboard"></i> Press Enter or , to add</p>
+            </div>
+          </div>
+
+          <!-- SEO Preview -->
+          <div class="scard">
+            <div class="scard__head"><i class="fas fa-magnifying-glass" style="color:var(--green)"></i> SEO Preview</div>
+            <div class="scard__body" style="padding-top:.75rem">
+              <div class="seo-box">
+                <div class="seo-url" id="seoUrl">leonardi.dev/blog/<span id="seoSlug">your-slug</span></div>
+                <div class="seo-title" id="seoTitle">Article Title</div>
+                <div class="seo-desc"  id="seoDesc">Your excerpt will show here as meta description...</div>
+              </div>
+            </div>
+          </div>
+
+          {% if action == 'edit' and post %}
+          <!-- Stats -->
+          <div class="scard">
+            <div class="scard__head"><i class="fas fa-chart-bar" style="color:var(--violet-2)"></i> Stats</div>
+            <div class="scard__body" style="padding-top:.75rem">
+              <div class="stat-row"><span><i class="fas fa-eye" style="color:var(--plasma)"></i> Views</span><strong class="mono" style="color:var(--cyan)">{{ post.views }}</strong></div>
+              <div class="stat-row"><span><i class="fas fa-calendar" style="color:var(--plasma)"></i> Published</span><strong class="mono" style="font-size:.78rem">{{ (post.published_at or post.created_at)[:10] }}</strong></div>
+              <div class="stat-row"><span><i class="fas fa-link" style="color:var(--plasma)"></i> Slug</span><code style="font-size:.7rem;color:var(--cyan)">{{ post.slug }}</code></div>
+            </div>
+          </div>
+          {% endif %}
+
+        </aside>
+      </div><!-- /layout -->
+    </form>
+
+    <!-- ── Link Modal ─────────────────────────── -->
+    <div class="modal-overlay" id="linkModal" style="display:none" onclick="if(event.target===this)closeLinkModal()">
+      <div class="modal-box">
+        <div class="modal-head"><i class="fas fa-link"></i> Insert Link</div>
+        <div class="form__group"><label class="form__label">URL</label><input type="text" id="linkUrl" class="form__input" placeholder="https://..."/></div>
+        <div class="form__group"><label class="form__label">Link Text</label><input type="text" id="linkText" class="form__input" placeholder="Click here"/></div>
+        <div style="display:flex;gap:.6rem;margin-top:1rem">
+          <button type="button" class="btn btn--primary btn--sm" onclick="confirmLink()"><i class="fas fa-check"></i> Insert</button>
+          <button type="button" class="btn btn--ghost btn--sm"   onclick="closeLinkModal()">Cancel</button>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- /admin__content -->
+</div><!-- /admin__main -->
+
+<!-- ═══════════════════ STYLES ═══════════════════ -->
+<style>
+/* ── Layout ── */
+.blog-editor { padding-bottom: 3rem; }
+.blog-editor__layout {
+  display: grid; grid-template-columns: 1fr 310px;
+  gap: 1.5rem; align-items: start;
+}
+.blog-editor__main { display: flex; flex-direction: column; gap: 1.25rem; min-width: 0; }
+.blog-editor__sidebar { display: flex; flex-direction: column; gap: 1rem; position: sticky; top: 80px; }
+
+/* ── Base Card ── */
+.bcard {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: var(--r-xl); padding: 1.4rem;
+  backdrop-filter: blur(12px); transition: border-color .2s;
+}
+.bcard:focus-within { border-color: rgba(139,92,246,.35); }
+.editor-bcard { padding: 0; overflow: hidden; }
+.bcard__label {
+  display: flex; align-items: center; gap: .45rem;
+  font-size: .75rem; font-weight: 700; color: var(--text-3);
+  text-transform: uppercase; letter-spacing: .1em;
+  font-family: var(--font-mono); margin-bottom: .85rem;
+}
+.bcard__label i { color: var(--plasma); }
+.req { width: 6px; height: 6px; border-radius: 50%; background: var(--red); box-shadow: 0 0 6px var(--red); display: inline-block; }
+.hint { font-size: .7rem; color: var(--text-3); font-weight: 400; text-transform: none; letter-spacing: 0; margin-left: auto; }
+.bcard__meta { display: flex; justify-content: space-between; margin-top: .55rem; padding-top: .55rem; border-top: 1px solid var(--border); }
+.cc { font-family: var(--font-mono); font-size: .71rem; color: var(--text-3); }
+.cc.warn { color: var(--orange); }
+.cc.over { color: var(--red); }
+.slug-prev { font-family: var(--font-mono); font-size: .71rem; color: var(--cyan); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 55%; }
+
+/* ── Title / Excerpt ── */
+.title-input {
+  width: 100%; background: none; border: none; outline: none;
+  color: var(--text); font-family: var(--font-display);
+  font-size: 1.55rem; font-weight: 800; caret-color: var(--cyan);
+}
+.title-input::placeholder { color: var(--muted); }
+.excerpt-input {
+  width: 100%; background: none; border: none; outline: none;
+  color: var(--text-2); font-size: .95rem; line-height: 1.8;
+  resize: none; min-height: 72px; caret-color: var(--cyan);
+  font-family: var(--font-body);
+}
+.excerpt-input::placeholder { color: var(--muted); }
+
+/* ── Editor Header ── */
+.editor-head {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 1rem 1.4rem; border-bottom: 1px solid var(--border);
+  background: var(--bg-3); flex-wrap: wrap; gap: .5rem;
+}
+.editor-head__left { display: flex; align-items: center; gap: .5rem; }
+.editor-head__right { display: flex; align-items: center; gap: .85rem; }
+.wc-badge { font-family: var(--font-mono); font-size: .72rem; color: var(--text-3); background: var(--surface-2); padding: .2rem .6rem; border-radius: 99px; border: 1px solid var(--border); }
+.mode-toggle { display: flex; border: 1px solid var(--border); border-radius: var(--r-sm); overflow: hidden; }
+.mode-btn {
+  padding: .32rem .8rem; font-size: .77rem; font-weight: 600;
+  border: none; background: none; color: var(--text-3);
+  cursor: pointer; display: flex; align-items: center; gap: .3rem;
+  font-family: var(--font-mono); transition: all .2s;
+}
+.mode-btn.active { background: var(--plasma); color: #fff; }
+.mode-btn:not(.active):hover { background: var(--surface-2); color: var(--text); }
+
+/* ── Toolbar ── */
+.editor-bar {
+  display: flex; flex-wrap: wrap; align-items: center; gap: .2rem;
+  padding: .55rem .9rem; background: rgba(255,255,255,.02);
+  border-bottom: 1px solid var(--border);
+}
+.bar-group { display: flex; gap: .18rem; }
+.bar-sep { width: 1px; height: 22px; background: var(--border-2); margin: 0 .2rem; }
+.tb {
+  width: 30px; height: 30px; border-radius: .35rem;
+  background: none; border: 1px solid transparent;
+  color: var(--text-2); font-size: .82rem; font-weight: 700;
+  cursor: pointer; display: flex; align-items: center; justify-content: center;
+  transition: all .15s; font-family: inherit;
+}
+.tb:hover { background: var(--surface-2); border-color: var(--border-2); color: var(--text); }
+.tb:active, .tb.pressed { background: rgba(139,92,246,.2); border-color: var(--plasma); color: var(--violet-2); }
+.tb--accent { color: var(--cyan); }
+.tb--accent:hover { background: rgba(0,245,255,.08); border-color: rgba(0,245,255,.3); }
+
+/* ── Visual Editor ── */
+.visual-ed {
+  min-height: 460px; padding: 1.6rem;
+  outline: none; color: var(--text-2);
+  line-height: 1.9; font-size: .97rem;
+  caret-color: var(--cyan); overflow-y: auto;
+}
+.visual-ed:empty::before { content: attr(data-ph); color: var(--muted); font-style: italic; pointer-events: none; }
+.visual-ed h2 { font-family: var(--font-display); font-size: 1.5rem; font-weight: 800; color: var(--text); margin: 2rem 0 .7rem; padding-bottom: .5rem; border-bottom: 1px solid var(--border); }
+.visual-ed h3 { font-family: var(--font-display); font-size: 1.2rem; font-weight: 700; color: var(--text); margin: 1.5rem 0 .5rem; }
+.visual-ed p  { margin-bottom: 1rem; }
+.visual-ed strong { color: var(--text); font-weight: 700; }
+.visual-ed em { color: var(--violet-2); }
+.visual-ed a  { color: var(--cyan); text-decoration: underline; }
+.visual-ed ul, .visual-ed ol { padding-left: 1.5rem; margin-bottom: 1rem; }
+.visual-ed blockquote { border-left: 3px solid var(--plasma); padding: .85rem 1.2rem; background: rgba(139,92,246,.06); border-radius: 0 var(--r) var(--r) 0; margin: 1.2rem 0; font-style: italic; color: var(--text-2); }
+.visual-ed pre { background: var(--bg-3); border: 1px solid var(--border); border-radius: var(--r-lg); padding: 1.2rem; overflow-x: auto; margin: 1.2rem 0; font-family: var(--font-mono); font-size: .87rem; color: var(--violet-3); }
+.visual-ed img { max-width: 100%; border-radius: var(--r-lg); border: 1px solid var(--border); margin: 1rem 0; display: block; }
+.visual-ed hr { border: none; border-top: 1px solid var(--border); margin: 2rem 0; }
+
+/* ── HTML editor ── */
+.html-ed {
+  width: 100%; min-height: 460px; padding: 1.4rem;
+  background: var(--bg-3); border: none; outline: none;
+  color: var(--violet-3); font-family: var(--font-mono);
+  font-size: .86rem; line-height: 1.75; resize: vertical;
+}
+
+/* ── MEDIA PANEL ── */
+.media-panel {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: var(--r-xl); overflow: hidden;
+  backdrop-filter: blur(12px);
+  animation: slideDown .3s ease;
+}
+@keyframes slideDown { from{opacity:0;transform:translateY(-12px)} to{opacity:1;transform:none} }
+
+.media-panel__head {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: .9rem 1.25rem; background: var(--bg-3);
+  border-bottom: 1px solid var(--border);
+  font-size: .9rem; font-weight: 700; color: var(--text);
+}
+.media-panel__close {
+  width: 28px; height: 28px; border-radius: 50%;
+  background: var(--surface-2); border: 1px solid var(--border);
+  color: var(--text-3); cursor: pointer; display: flex; align-items: center; justify-content: center;
+  transition: all .2s;
+}
+.media-panel__close:hover { background: var(--red-dim); border-color: var(--red); color: var(--red); }
+
+/* Upload zone */
+.media-upload-zone {
+  margin: 1.25rem; border: 2px dashed var(--border-2);
+  border-radius: var(--r-lg); transition: all .25s; min-height: 160px;
+  display: flex; align-items: center; justify-content: center;
+  background: rgba(255,255,255,.02); cursor: default;
+}
+.media-upload-zone.dg-over {
+  border-color: var(--cyan); background: rgba(0,245,255,.05);
+  transform: scale(1.01); box-shadow: 0 0 20px rgba(0,245,255,.15);
+}
+.media-upload-inner { text-align: center; padding: 1.5rem; }
+.media-upload-icon {
+  width: 56px; height: 56px; border-radius: var(--r-lg);
+  background: linear-gradient(135deg,rgba(139,92,246,.2),rgba(0,245,255,.08));
+  border: 1px solid rgba(139,92,246,.25);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 1.5rem; color: var(--violet-2); margin: 0 auto .85rem;
+}
+.media-upload-title { font-size: .95rem; font-weight: 700; color: var(--text); margin-bottom: .3rem; }
+.media-upload-sub   { font-size: .8rem; color: var(--text-3); margin-bottom: 1rem; }
+.media-upload-btns  { display: flex; gap: .6rem; justify-content: center; flex-wrap: wrap; }
+
+/* Progress bar */
+.media-progress { margin: 0 1.25rem 1rem; }
+.media-progress__bar-wrap { height: 5px; background: rgba(255,255,255,.06); border-radius: 99px; overflow: hidden; margin-bottom: .4rem; }
+.media-progress__bar { height: 100%; width: 0%; background: linear-gradient(90deg,var(--violet),var(--plasma),var(--cyan)); border-radius: 99px; transition: width .2s ease; box-shadow: 0 0 8px rgba(139,92,246,.5); }
+.media-progress__label { font-family: var(--font-mono); font-size: .75rem; color: var(--text-3); }
+
+/* Grid header */
+.media-grid-header {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: .5rem 1.25rem; font-size: .8rem; color: var(--text-3);
+  font-family: var(--font-mono);
+}
+
+/* Media grid */
+.media-grid {
+  display: grid; grid-template-columns: repeat(auto-fill, minmax(120px,1fr));
+  gap: .6rem; padding: .25rem 1.25rem 1.25rem;
+}
+.media-item {
+  background: var(--bg-3); border: 1px solid var(--border);
+  border-radius: var(--r); overflow: hidden; position: relative;
+  transition: all .2s; cursor: pointer;
+}
+.media-item:hover { border-color: var(--plasma); transform: translateY(-2px); }
+.media-item__thumb {
+  width: 100%; aspect-ratio: 1; object-fit: cover; display: block;
+}
+.media-item__thumb--file {
+  width: 100%; aspect-ratio: 1;
+  background: var(--surface-2);
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center; gap: .35rem;
+}
+.media-item__thumb--file i { font-size: 1.6rem; color: var(--violet-2); }
+.media-item__thumb--file span { font-size: .62rem; color: var(--text-3); font-family: var(--font-mono); text-align: center; padding: 0 .3rem; word-break: break-all; }
+.media-item__info { padding: .4rem .5rem; }
+.media-item__name { font-size: .68rem; color: var(--text-2); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.media-item__size { font-size: .62rem; color: var(--text-3); font-family: var(--font-mono); }
+.media-item__insert {
+  position: absolute; top: .3rem; right: .3rem;
+  width: 22px; height: 22px; border-radius: 50%;
+  background: var(--plasma); color: #fff; border: none;
+  font-size: .65rem; cursor: pointer; display: flex; align-items: center; justify-content: center;
+  opacity: 0; transition: opacity .2s;
+}
+.media-item:hover .media-item__insert { opacity: 1; }
+.media-item__status {
+  position: absolute; top: .3rem; left: .3rem;
+  font-size: .6rem; background: rgba(0,0,0,.7); color: #fff;
+  padding: .1rem .35rem; border-radius: .25rem;
+}
+.media-item__status--uploading { background: rgba(249,115,22,.85); }
+.media-item__status--done      { background: rgba(16,185,129,.85); }
+.media-item__status--error     { background: rgba(244,63,94,.85); }
+
+/* ── Sidebar Cards ── */
+.scard { background: var(--surface); border: 1px solid var(--border); border-radius: var(--r-xl); overflow: hidden; backdrop-filter: blur(12px); }
+.scard__head { display: flex; align-items: center; gap: .55rem; padding: .85rem 1.2rem; background: var(--bg-3); border-bottom: 1px solid var(--border); font-size: .88rem; font-weight: 700; color: var(--text); }
+.scard__body { padding: 1.1rem; display: flex; flex-direction: column; gap: .85rem; }
+
+/* Status radio */
+.status-row { display: flex; gap: .4rem; flex-wrap: wrap; }
+.sopt { cursor: pointer; }
+.sopt input { display: none; }
+.sopt span {
+  display: inline-flex; align-items: center; gap: .3rem;
+  padding: .3rem .8rem; border-radius: 99px;
+  font-size: .76rem; font-weight: 600; font-family: var(--font-mono);
+  border: 1px solid var(--border); background: var(--surface-2);
+  color: var(--text-3); transition: all .18s; cursor: pointer;
+}
+.sopt input:checked + span { border-color: var(--plasma); }
+.sopt--draft    input:checked + span { background: rgba(251,191,36,.12); color: var(--gold); border-color: rgba(251,191,36,.4); }
+.sopt--pub      input:checked + span { background: rgba(16,185,129,.12); color: var(--green); border-color: rgba(16,185,129,.4); }
+.sopt--arch     input:checked + span { background: rgba(100,116,139,.12); color: var(--text-3); }
+
+/* Cover zone */
+.cover-zone {
+  border: 2px dashed var(--border-2); border-radius: var(--r-lg);
+  min-height: 140px; display: flex; align-items: center; justify-content: center;
+  cursor: pointer; transition: all .25s; overflow: hidden;
+  background: rgba(255,255,255,.02);
+}
+.cover-zone:hover, .cover-zone.dg-over { border-color: var(--plasma); background: rgba(139,92,246,.04); }
+.cover-placeholder { text-align: center; padding: 1.25rem; color: var(--text-3); }
+.cover-placeholder i { font-size: 1.8rem; color: var(--violet-2); display: block; margin-bottom: .5rem; }
+.cover-placeholder p { font-size: .82rem; font-weight: 600; color: var(--text-2); margin: 0 0 .25rem; }
+.cover-placeholder small { font-size: .72rem; }
+.cover-preview { position: relative; width: 100%; }
+.cover-preview img { width: 100%; aspect-ratio: 16/9; object-fit: cover; }
+.cover-del { position: absolute; top: .4rem; right: .4rem; width: 26px; height: 26px; border-radius: 50%; background: rgba(244,63,94,.9); border: none; color: #fff; cursor: pointer; font-size: .78rem; display: flex; align-items: center; justify-content: center; transition: all .2s; }
+.cover-del:hover { transform: scale(1.1); background: var(--red); }
+
+/* Tags */
+.tags-box { min-height: 42px; padding: .45rem; background: var(--bg-3); border: 1px solid var(--border); border-radius: var(--r); display: flex; flex-wrap: wrap; gap: .35rem; cursor: text; transition: border-color .2s; }
+.tags-box:focus-within { border-color: var(--plasma); }
+.tag-pill { display: inline-flex; align-items: center; gap: .28rem; padding: .18rem .55rem; border-radius: 99px; background: rgba(139,92,246,.15); border: 1px solid rgba(139,92,246,.3); color: var(--violet-2); font-size: .73rem; font-family: var(--font-mono); }
+.tag-pill button { background: none; border: none; color: var(--violet-3); cursor: pointer; font-size: .68rem; padding: 0; transition: color .15s; }
+.tag-pill button:hover { color: var(--red); }
+.tag-input { flex: 1; min-width: 90px; background: none; border: none; outline: none; color: var(--text); font-size: .86rem; padding: .15rem .3rem; }
+
+/* SEO box */
+.seo-box { background: var(--bg-3); border: 1px solid var(--border); border-radius: var(--r-lg); padding: .9rem; }
+.seo-url   { font-size: .71rem; color: #669553; margin-bottom: .25rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.seo-title { font-size: .9rem; color: #8ab4f8; font-weight: 600; margin-bottom: .25rem; line-height: 1.3; }
+.seo-desc  { font-size: .76rem; color: #bdc1c6; line-height: 1.5; }
+
+/* Stat rows */
+.stat-row { display: flex; justify-content: space-between; align-items: center; padding: .4rem 0; border-bottom: 1px solid var(--border); font-size: .85rem; color: var(--text-2); }
+.stat-row:last-child { border-bottom: none; }
+
+/* smeta hint */
+.smeta { font-size: .72rem; color: var(--text-3); display: flex; align-items: center; gap: .3rem; margin: 0; }
+.smeta i { color: var(--cyan); }
+
+/* Modal */
+.modal-overlay { position: fixed; inset: 0; z-index: 2000; background: rgba(0,0,0,.7); backdrop-filter: blur(8px); display: flex; align-items: center; justify-content: center; padding: 1.5rem; }
+.modal-box { background: var(--bg-2); border: 1px solid var(--border-2); border-radius: var(--r-xl); padding: 2rem; width: 100%; max-width: 420px; box-shadow: 0 24px 60px rgba(0,0,0,.8); }
+.modal-head { font-family: var(--font-display); font-size: 1.1rem; font-weight: 700; margin-bottom: 1.25rem; display: flex; align-items: center; gap: .5rem; }
+.modal-head i { color: var(--plasma); }
+
+/* ── Responsive ── */
+@media (max-width:1100px) { .blog-editor__layout { grid-template-columns: 1fr 280px; } }
+@media (max-width:900px)  { .blog-editor__layout { grid-template-columns: 1fr; } .blog-editor__sidebar { position: static; } }
+@media (max-width:600px)  {
+  .editor-head { flex-direction: column; align-items: flex-start; }
+  .editor-bar  { gap: .12rem; padding: .45rem .7rem; }
+  .tb          { width: 27px; height: 27px; font-size: .78rem; }
+  .visual-ed   { min-height: 320px; padding: 1.1rem; }
+  .title-input { font-size: 1.2rem; }
+  .media-grid  { grid-template-columns: repeat(auto-fill, minmax(90px,1fr)); }
+}
+</style>
+
+<!-- ═══════════════════ JAVASCRIPT ═══════════════════ -->
+{% block extra_js %}
+<script>
+/* ─────────────────────────────────────
+   GLOBAL STATE
+───────────────────────────────────── */
+let editorMode  = 'visual';
+let savedSel    = null;
+let currentTags = [];
+let mediaItems  = [];   // {file, objectUrl, type, status}
+
+const visualEd = document.getElementById('visualEditor');
+const htmlEd   = document.getElementById('htmlEditor');
+
+/* ─────────────────────────────────────
+   FORM SUBMIT  — sync hidden fields
+───────────────────────────────────── */
+document.getElementById('blogForm').addEventListener('submit', function(e) {
+  syncContentHidden();
+  syncTagsHidden();
+  syncReadTime();
+  const btn = document.getElementById('publishBtn');
+  btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Saving...';
+  btn.disabled = true;
+});
+
+function syncContentHidden() {
+  document.getElementById('contentHidden').value =
+    editorMode === 'visual' ? visualEd.innerHTML : htmlEd.value;
+}
+function syncTagsHidden() {
+  document.getElementById('tagsHidden').value = currentTags.join(',');
+}
+function syncReadTime() {
+  document.getElementById('readTimeHidden').value =
+    document.getElementById('readTimeDisplay').value;
+}
+function saveDraft() {
+  document.querySelectorAll('input[name="status"]').forEach(r => r.checked = r.value === 'draft');
+  syncContentHidden(); syncTagsHidden(); syncReadTime();
+  document.getElementById('blogForm').submit();
+}
+
+/* ─────────────────────────────────────
+   EDITOR MODE  visual ↔ html
+───────────────────────────────────── */
+function setMode(m) {
+  if (m === editorMode) return;
+  editorMode = m;
+  const bar = document.getElementById('editorBar');
+  if (m === 'visual') {
+    visualEd.innerHTML = htmlEd.value;
+    visualEd.style.display = 'block';
+    htmlEd.style.display   = 'none';
+    document.getElementById('btnVisual').classList.add('active');
+    document.getElementById('btnHtml').classList.remove('active');
+    bar.style.opacity = '1'; bar.style.pointerEvents = 'auto';
+  } else {
+    htmlEd.value = visualEd.innerHTML;
+    htmlEd.style.display   = 'block';
+    visualEd.style.display = 'none';
+    document.getElementById('btnHtml').classList.add('active');
+    document.getElementById('btnVisual').classList.remove('active');
+    bar.style.opacity = '.35'; bar.style.pointerEvents = 'none';
+  }
+}
+
+/* ─────────────────────────────────────
+   EDITOR COMMANDS
+───────────────────────────────────── */
+function cmd(c, v = null) {
+  if (editorMode !== 'visual') return;
+  visualEd.focus(); document.execCommand(c, false, v);
+  syncWordCount();
+}
+function insertCode() {
+  if (editorMode !== 'visual') return;
+  visualEd.focus();
+  const sel = window.getSelection();
+  const t   = sel.toString() || '// code here';
+  document.execCommand('insertHTML', false, `<pre><code>${t}</code></pre><p><br></p>`);
+}
+function insertQuote() {
+  if (editorMode !== 'visual') return;
+  visualEd.focus();
+  const sel = window.getSelection();
+  const t   = sel.toString() || 'Quote here...';
+  document.execCommand('insertHTML', false, `<blockquote>${t}</blockquote><p><br></p>`);
+}
+function insertHR() {
+  if (editorMode !== 'visual') return;
+  visualEd.focus();
+  document.execCommand('insertHTML', false, '<hr><p><br></p>');
+}
+
+/* Word count */
+function syncWordCount() {
+  const words = (visualEd.innerText||'').trim().split(/\s+/).filter(Boolean).length;
+  document.getElementById('wordCountBadge').textContent = `${words} word${words!==1?'s':''}`;
+  const rt = Math.max(1, Math.ceil(words / 200));
+  document.getElementById('readTimeDisplay').value = rt;
+  document.getElementById('readTimeHidden').value  = rt;
+}
+visualEd.addEventListener('input', syncWordCount);
+
+/* ─────────────────────────────────────
+   TITLE / SEO
+───────────────────────────────────── */
+function onTitleChange(v) {
+  const slug = v.toLowerCase().replace(/[^\w\s-]/g,'').replace(/[\s_]+/g,'-').replace(/-+/g,'-').slice(0,60);
+  document.getElementById('slugPrev').textContent  = slug ? `/${slug}` : '';
+  document.getElementById('seoSlug').textContent   = slug || 'your-slug';
+  document.getElementById('seoTitle').textContent  = v    || 'Article Title';
+  const cc = document.getElementById('titleCC');
+  cc.textContent = `${v.length} / 80`;
+  cc.className   = 'cc' + (v.length > 80 ? ' over' : v.length > 60 ? ' warn' : '');
+}
+function onExcerptChange(v) {
+  const cc = document.getElementById('excerptCC');
+  cc.textContent = `${v.length} / 220`;
+  cc.className   = 'cc' + (v.length > 200 ? ' warn' : '');
+  document.getElementById('seoDesc').textContent = v || 'Your excerpt will show here...';
+}
+
+/* ─────────────────────────────────────
+   LINK MODAL
+───────────────────────────────────── */
+function openLinkModal() {
+  const sel = window.getSelection();
+  document.getElementById('linkText').value = sel.toString() || '';
+  document.getElementById('linkUrl').value  = '';
+  if (sel.rangeCount) savedSel = sel.getRangeAt(0).cloneRange();
+  document.getElementById('linkModal').style.display = 'flex';
+  document.getElementById('linkUrl').focus();
+}
+function closeLinkModal() { document.getElementById('linkModal').style.display = 'none'; }
+function confirmLink() {
+  const url  = document.getElementById('linkUrl').value.trim();
+  const text = document.getElementById('linkText').value.trim() || url;
+  if (!url) return;
+  visualEd.focus();
+  if (savedSel) { const s = window.getSelection(); s.removeAllRanges(); s.addRange(savedSel); }
+  document.execCommand('insertHTML', false, `<a href="${url}" target="_blank" rel="noopener">${text}</a>`);
+  closeLinkModal();
+}
+document.getElementById('linkModal').addEventListener('click', e => { if (e.target === e.currentTarget) closeLinkModal(); });
+
+/* ─────────────────────────────────────
+   MEDIA / FOLDER PANEL
+───────────────────────────────────── */
+function openMediaPanel() {
+  const panel = document.getElementById('mediaPanel');
+  panel.style.display = panel.style.display === 'none' ? 'block' : 'none';
+}
+function closeMediaPanel() { document.getElementById('mediaPanel').style.display = 'none'; }
+
+/* Drag events for media drop zone */
+function mediaDragOver(e)  { e.preventDefault(); document.getElementById('mediaDropZone').classList.add('dg-over'); }
+function mediaDragLeave(e) { document.getElementById('mediaDropZone').classList.remove('dg-over'); }
+function mediaDrop(e) {
+  e.preventDefault();
+  document.getElementById('mediaDropZone').classList.remove('dg-over');
+  const files = e.dataTransfer.files;
+  if (files.length) handleMediaFiles(files);
+}
+
+/* Handle files from input or drop */
+function handleMediaFiles(files) {
+  const arr = Array.from(files);
+  if (!arr.length) return;
+
+  document.getElementById('mediaProgress').style.display  = 'block';
+  document.getElementById('mediaGridHeader').style.display = 'flex';
+
+  let done = 0;
+  const bar   = document.getElementById('mediaProgressBar');
+  const label = document.getElementById('mediaProgressLabel');
+
+  arr.forEach((file, idx) => {
+    const item = {
+      id:        Date.now() + idx,
+      file:      file,
+      name:      file.name,
+      size:      file.size,
+      type:      file.type,
+      objectUrl: file.type.startsWith('image/') ? URL.createObjectURL(file) : null,
+      status:    'uploading',
+      path:      file.webkitRelativePath || file.name,  // folder path if uploaded via folder
+      serverUrl: null,
+    };
+    mediaItems.push(item);
+    renderMediaItem(item);
+
+    // Simulate upload (in production, use FormData + fetch to /api/upload)
+    uploadFileSingle(file, item, () => {
+      done++;
+      const pct = Math.round((done / arr.length) * 100);
+      bar.style.width = pct + '%';
+      label.textContent = `Uploading ${done} / ${arr.length} files...`;
+      if (done === arr.length) {
+        setTimeout(() => {
+          document.getElementById('mediaProgress').style.display = 'none';
+          label.textContent = 'Uploading...';
+          bar.style.width   = '0%';
+        }, 1500);
+      }
+      updateGridCount();
+    });
+  });
+}
+
+/* Upload one file to server */
+function uploadFileSingle(file, item, onDone) {
+  const fd = new FormData();
+  fd.append('file', file);
+  fd.append('subfolder', 'blog');
+
+  fetch('/api/upload-media', { method: 'POST', body: fd })
+    .then(r => r.json())
+    .then(data => {
+      item.status    = 'done';
+      item.serverUrl = data.url || item.objectUrl;
+      updateItemStatus(item);
+      onDone();
+    })
+    .catch(() => {
+      // Fallback: use objectUrl for images (works locally)
+      item.status    = item.objectUrl ? 'done' : 'error';
+      item.serverUrl = item.objectUrl;
+      updateItemStatus(item);
+      onDone();
+    });
+}
+
+/* Render a media item card */
+function renderMediaItem(item) {
+  const grid = document.getElementById('mediaGrid');
+  const div  = document.createElement('div');
+  div.className = 'media-item';
+  div.id = 'mi_' + item.id;
+
+  const isImg  = item.type.startsWith('image/');
+  const isVid  = item.type.startsWith('video/');
+  const isPdf  = item.type === 'application/pdf';
+  const isDoc  = item.type.includes('word') || item.name.endsWith('.doc') || item.name.endsWith('.docx');
+
+  let thumbHtml = '';
+  if (isImg && item.objectUrl) {
+    thumbHtml = `<img class="media-item__thumb" src="${item.objectUrl}" alt="${item.name}" loading="lazy"/>`;
+  } else if (isVid) {
+    thumbHtml = `<div class="media-item__thumb--file"><i class="fas fa-film" style="color:#f97316"></i><span>${item.name}</span></div>`;
+  } else if (isPdf) {
+    thumbHtml = `<div class="media-item__thumb--file"><i class="fas fa-file-pdf" style="color:#ef4444"></i><span>${item.name}</span></div>`;
+  } else if (isDoc) {
+    thumbHtml = `<div class="media-item__thumb--file"><i class="fas fa-file-word" style="color:#3b82f6"></i><span>${item.name}</span></div>`;
+  } else {
+    thumbHtml = `<div class="media-item__thumb--file"><i class="fas fa-file" style="color:#94a3b8"></i><span>${item.name}</span></div>`;
+  }
+
+  div.innerHTML = `
+    ${thumbHtml}
+    <div class="media-item__info">
+      <div class="media-item__name" title="${item.path}">${item.name}</div>
+      <div class="media-item__size">${formatBytes(item.size)}</div>
+    </div>
+    <span class="media-item__status media-item__status--uploading" id="st_${item.id}">⏳</span>
+    <button type="button" class="media-item__insert" onclick="insertMedia(${item.id})" title="Insert into article">
+      <i class="fas fa-plus"></i>
+    </button>`;
+
+  div.addEventListener('dblclick', () => insertMedia(item.id));
+  grid.appendChild(div);
+}
+
+/* Update status badge after upload */
+function updateItemStatus(item) {
+  const st = document.getElementById('st_' + item.id);
+  if (!st) return;
+  if (item.status === 'done') {
+    st.textContent = '✅';
+    st.className   = 'media-item__status media-item__status--done';
+  } else if (item.status === 'error') {
+    st.textContent = '❌';
+    st.className   = 'media-item__status media-item__status--error';
+  }
+}
+
+/* Insert a media item into the editor */
+function insertMedia(id) {
+  const item = mediaItems.find(i => i.id === id);
+  if (!item) return;
+  const url  = item.serverUrl || item.objectUrl || '#';
+  const name = item.name;
+  const isImg = item.type.startsWith('image/');
+  const isVid = item.type.startsWith('video/');
+
+  if (editorMode !== 'visual') {
+    setMode('visual');
+  }
+  visualEd.focus();
+
+  let html = '';
+  if (isImg) {
+    html = `<figure style="margin:1.5rem 0;text-align:center">
+      <img src="${url}" alt="${name}" style="max-width:100%;border-radius:.75rem;border:1px solid rgba(255,255,255,.08)"/>
+      <figcaption style="font-size:.82rem;color:#94a3b8;margin-top:.5rem">${name}</figcaption>
+    </figure><p><br></p>`;
+  } else if (isVid) {
+    html = `<video controls style="max-width:100%;border-radius:.75rem;margin:1rem 0">
+      <source src="${url}" type="${item.type}"/>
+      Your browser does not support video.
+    </video><p><br></p>`;
+  } else {
+    html = `<p><a href="${url}" target="_blank" rel="noopener" style="color:#00f5ff">
+      <i class="fas fa-file-download"></i> ${name} (${formatBytes(item.size)})
+    </a></p>`;
+  }
+  document.execCommand('insertHTML', false, html);
+  syncWordCount();
+
+  // Highlight item as inserted
+  const card = document.getElementById('mi_' + id);
+  if (card) {
+    card.style.borderColor = 'var(--green)';
+    card.style.boxShadow   = '0 0 10px rgba(16,185,129,.3)';
+  }
+}
+
+function insertAllMedia() {
+  mediaItems.forEach(item => insertMedia(item.id));
+}
+
+function clearAllMedia() {
+  if (!confirm('Clear all uploaded media from the panel?')) return;
+  mediaItems.forEach(item => { if (item.objectUrl) URL.revokeObjectURL(item.objectUrl); });
+  mediaItems = [];
+  document.getElementById('mediaGrid').innerHTML = '';
+  document.getElementById('mediaGridHeader').style.display = 'none';
+}
+
+function updateGridCount() {
+  const h = document.getElementById('mediaGridHeader');
+  const c = mediaItems.length;
+  h.querySelector('span').textContent = `${c} file${c!==1?'s':''} uploaded`;
+}
+
+function formatBytes(b) {
+  if (b < 1024)       return b + 'B';
+  if (b < 1048576)    return (b/1024).toFixed(1)  + 'KB';
+  return               (b/1048576).toFixed(1) + 'MB';
+}
+
+/* ─────────────────────────────────────
+   COVER IMAGE
+───────────────────────────────────── */
+function previewCover(input) {
+  if (!input.files[0]) return;
+  const reader = new FileReader();
+  reader.onload = e => {
+    const zone = document.getElementById('coverZone');
+    const ph   = document.getElementById('coverPlaceholder');
+    const pr   = document.getElementById('coverPreview');
+    if (ph) ph.style.display = 'none';
+    if (pr) {
+      pr.style.display = 'block';
+      document.getElementById('coverImg').src = e.target.result;
+    } else {
+      zone.innerHTML = `<div class="cover-preview" id="coverPreview">
+        <img src="${e.target.result}" id="coverImg" alt="Cover"/>
+        <button type="button" class="cover-del" onclick="removeCover(event)"><i class="fas fa-times"></i></button>
+      </div>`;
+    }
+  };
+  reader.readAsDataURL(input.files[0]);
+}
+function removeCover(e) {
+  e.stopPropagation();
+  document.getElementById('coverInput').value = '';
+  document.getElementById('coverZone').innerHTML = `
+    <div class="cover-placeholder" id="coverPlaceholder">
+      <i class="fas fa-cloud-arrow-up"></i>
+      <p>Drag &amp; drop or click</p>
+      <small>JPG, PNG, WebP — auto-optimized</small>
+    </div>`;
+}
+function coverDragOver(e)  { e.preventDefault(); document.getElementById('coverZone').classList.add('dg-over'); }
+function coverDragLeave(e) { document.getElementById('coverZone').classList.remove('dg-over'); }
+function coverDrop(e) {
+  e.preventDefault();
+  document.getElementById('coverZone').classList.remove('dg-over');
+  const file = e.dataTransfer.files[0];
+  if (file && file.type.startsWith('image/')) {
+    const dt = new DataTransfer(); dt.items.add(file);
+    const inp = document.getElementById('coverInput');
+    inp.files = dt.files; previewCover(inp);
+  }
+}
+
+/* ─────────────────────────────────────
+   TAGS
+───────────────────────────────────── */
+function initTags() {
+  const v = document.getElementById('tagsHidden').value;
+  if (v.trim()) v.split(',').map(t=>t.trim()).filter(Boolean).forEach(addTag);
+}
+function tagKeydown(e) {
+  if (e.key === 'Enter' || e.key === ',') {
+    e.preventDefault();
+    const v = e.target.value.trim().replace(/,$/, '');
+    if (v) { addTag(v); e.target.value = ''; }
+  } else if (e.key === 'Backspace' && !e.target.value && currentTags.length) {
+    removeTag(currentTags[currentTags.length-1]);
+  }
+}
+function addTag(tag) {
+  tag = tag.toLowerCase().replace(/[^a-z0-9._-]/g,'').slice(0,30);
+  if (!tag || currentTags.includes(tag)) return;
+  currentTags.push(tag);
+  renderTags();
+}
+function removeTag(tag) {
+  currentTags = currentTags.filter(t=>t!==tag);
+  renderTags();
+}
+function renderTags() {
+  document.getElementById('tagPills').innerHTML = currentTags.map(t => `
+    <span class="tag-pill">${t}
+      <button type="button" onclick="removeTag('${t}')" title="Remove">×</button>
+    </span>`).join('');
+  syncTagsHidden();
+}
+
+/* ─────────────────────────────────────
+   KEYBOARD SHORTCUTS
+───────────────────────────────────── */
+document.addEventListener('keydown', e => {
+  if (e.ctrlKey || e.metaKey) {
+    switch(e.key) {
+      case 's': e.preventDefault(); document.getElementById('blogForm').submit(); break;
+      case 'd': e.preventDefault(); saveDraft(); break;
+      case 'b': if(editorMode==='visual'){e.preventDefault();cmd('bold');} break;
+      case 'i': if(editorMode==='visual'){e.preventDefault();cmd('italic');} break;
+      case 'k': if(editorMode==='visual'){e.preventDefault();openLinkModal();} break;
+      case 'm': e.preventDefault(); openMediaPanel(); break;
+    }
+  }
+  if (e.key === 'Escape') {
+    closeLinkModal();
+    closeMediaPanel();
+  }
+});
+
+/* ─────────────────────────────────────
+   INIT
+───────────────────────────────────── */
+document.addEventListener('DOMContentLoaded', () => {
+  // Title / excerpt init
+  const t = document.getElementById('articleTitle');
+  const x = document.getElementById('articleExcerpt');
+  if (t.value) onTitleChange(t.value);
+  if (x.value) onExcerptChange(x.value);
+  x.addEventListener('input', e => onExcerptChange(e.target.value));
+
+  // Tags init
+  initTags();
+
+  // Word count init
+  syncWordCount();
+});
+</script>
+
+<!-- Keyboard shortcut hint -->
+<div id="kbHint" style="
+  position:fixed;bottom:1.25rem;left:50%;transform:translateX(-50%);
+  background:rgba(7,7,26,.95);border:1px solid var(--border);
+  border-radius:99px;padding:.38rem 1rem;font-size:.7rem;
+  color:var(--text-3);font-family:var(--font-mono);
+  backdrop-filter:blur(12px);pointer-events:none;opacity:.75;
+  display:none;z-index:800;white-space:nowrap;">
+  <i class="fas fa-keyboard" style="color:var(--plasma)"></i>
+  Ctrl+S Save &nbsp;·&nbsp; Ctrl+D Draft &nbsp;·&nbsp; Ctrl+M Media &nbsp;·&nbsp; Ctrl+K Link
+</div>
+<script>
+  visualEd.addEventListener('focus', () => {
+    const h = document.getElementById('kbHint');
+    h.style.display='block';
+    clearTimeout(window._kbT);
+    window._kbT = setTimeout(() => h.style.display='none', 4000);
+  });
+</script>
+{% endblock %}
+{% endblock %}

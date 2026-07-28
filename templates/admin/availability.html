@@ -1,0 +1,150 @@
+{% extends "base.html" %}
+{% block title %}Availability — Admin{% endblock %}
+{% block body_class %}admin-page{% endblock %}
+
+{% block layout %}
+{% include "partials/admin_sidebar.html" %}
+<div class="admin__main">
+  {% include "partials/admin_topbar.html" %}
+  <div class="admin__content">
+
+    <div class="page-header">
+      <div>
+        <h1 class="page-header__title">Availability Calendar</h1>
+        <p class="page-header__sub">Atur status ketersediaan Anda per hari</p>
+      </div>
+      <div class="page-header__actions">
+        {% set prev_month = month - 1 if month > 1 else 12 %}
+        {% set prev_year  = year if month > 1 else year - 1 %}
+        {% set next_month = month + 1 if month < 12 else 1 %}
+        {% set next_year  = year if month < 12 else year + 1 %}
+        <a href="{{ url_for('admin_availability', year=prev_year, month=prev_month) }}" class="btn btn--ghost btn--sm">
+          <i class="fas fa-chevron-left"></i>
+        </a>
+        <span class="avail-month-label">
+          {{ ['','Januari','Februari','Maret','April','Mei','Juni','Juli','Agustus','September','Oktober','November','Desember'][month] }} {{ year }}
+        </span>
+        <a href="{{ url_for('admin_availability', year=next_year, month=next_month) }}" class="btn btn--ghost btn--sm">
+          <i class="fas fa-chevron-right"></i>
+        </a>
+      </div>
+    </div>
+
+    <div class="avail-layout">
+      <!-- Calendar Grid -->
+      <div class="dash__card">
+        <div class="dash__card-header">
+          <h3>Kalender — {{ ['','Jan','Feb','Mar','Apr','Mei','Jun','Jul','Agt','Sep','Okt','Nov','Des'][month] }} {{ year }}</h3>
+          <div class="avail-legend">
+            <span class="avail-dot avail-dot--available"></span>Tersedia
+            <span class="avail-dot avail-dot--busy"></span>Sibuk
+            <span class="avail-dot avail-dot--booked"></span>Terbooking
+          </div>
+        </div>
+        <div style="padding:1.25rem">
+          <!-- Day headers -->
+          <div class="avail-cal-header">
+            {% for d in ['Min','Sen','Sel','Rab','Kam','Jum','Sab'] %}
+            <div class="avail-cal-day-head">{{ d }}</div>
+            {% endfor %}
+          </div>
+
+          {# Calculate first weekday of month #}
+          {% set first_day = namespace(val=0) %}
+          {% set days_in_month = namespace(val=0) %}
+          {% set today_str = now.strftime('%Y-%m-%d') %}
+
+          {# Python-rendered calendar data via loop #}
+          <div class="avail-cal-grid" id="availCalGrid">
+            <!-- Filled by JS below -->
+          </div>
+        </div>
+      </div>
+
+      <!-- Set Availability Form -->
+      <div style="display:flex;flex-direction:column;gap:1.25rem;">
+        <div class="dash__card">
+          <div class="dash__card-header"><h3><i class="fas fa-calendar-plus"></i> Atur Status</h3></div>
+          <form method="POST" action="{{ url_for('admin_set_availability') }}" style="padding:1.25rem;display:flex;flex-direction:column;gap:1rem;">
+            <div class="form__group">
+              <label class="form__label">Tanggal</label>
+              <input type="date" name="date" class="form__input" id="availDateInput"
+                     value="{{ now.strftime('%Y-%m-%d') }}" required/>
+            </div>
+            <div class="form__group">
+              <label class="form__label">Status</label>
+              <select name="status" class="form__input form__select">
+                <option value="available">✅ Tersedia</option>
+                <option value="busy">🟡 Sedang Sibuk</option>
+                <option value="booked">🔴 Terbooking</option>
+              </select>
+            </div>
+            <div class="form__group">
+              <label class="form__label">Catatan (opsional)</label>
+              <input type="text" name="note" class="form__input" placeholder="cth: Meeting dengan klien"/>
+            </div>
+            <button type="submit" class="btn btn--primary btn--full">
+              <i class="fas fa-save"></i> Simpan
+            </button>
+          </form>
+        </div>
+
+        <!-- Quick Status Summary -->
+        <div class="dash__card">
+          <div class="dash__card-header"><h3>Bulan Ini</h3></div>
+          <div style="padding:1.25rem;display:flex;flex-direction:column;gap:.75rem;">
+            {% set avail_count  = avail.values() | selectattr('status','eq','available') | list | length %}
+            {% set busy_count   = avail.values() | selectattr('status','eq','busy')      | list | length %}
+            {% set booked_count = avail.values() | selectattr('status','eq','booked')    | list | length %}
+            <div class="avail-stat"><span class="avail-dot avail-dot--available"></span><span>Tersedia</span><strong>{{ avail_count }} hari</strong></div>
+            <div class="avail-stat"><span class="avail-dot avail-dot--busy"></span><span>Sibuk</span><strong>{{ busy_count }} hari</strong></div>
+            <div class="avail-stat"><span class="avail-dot avail-dot--booked"></span><span>Terbooking</span><strong>{{ booked_count }} hari</strong></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+{% block extra_js %}
+<script>
+// Render calendar client-side
+const year  = {{ year }};
+const month = {{ month }};
+const avail = {{ avail | tojson }};
+const today = new Date().toISOString().slice(0,10);
+
+function pad(n){ return String(n).padStart(2,'0'); }
+function dateStr(y,m,d){ return `${y}-${pad(m)}-${pad(d)}`; }
+
+const firstDay = new Date(year, month-1, 1).getDay();
+const daysInMonth = new Date(year, month, 0).getDate();
+const grid = document.getElementById('availCalGrid');
+
+// Empty cells before first day
+for(let i=0; i<firstDay; i++){
+  const el = document.createElement('div');
+  el.className = 'avail-cell avail-cell--empty';
+  grid.appendChild(el);
+}
+
+for(let d=1; d<=daysInMonth; d++){
+  const ds = dateStr(year, month, d);
+  const info = avail[ds] || null;
+  const status = info ? info.status : '';
+  const note   = info ? info.note  : '';
+  const isToday = ds === today;
+
+  const cell = document.createElement('div');
+  cell.className = `avail-cell ${status ? 'avail-cell--'+status : ''} ${isToday ? 'avail-cell--today' : ''}`;
+  cell.title = note || status || 'Klik untuk atur';
+  cell.innerHTML = `<span class="avail-cell__num">${d}</span>${note ? '<span class="avail-cell__note">'+note.slice(0,12)+'</span>' : ''}`;
+  cell.addEventListener('click', () => {
+    document.getElementById('availDateInput').value = ds;
+  });
+  grid.appendChild(cell);
+}
+</script>
+{% endblock %}
+{% endblock %}

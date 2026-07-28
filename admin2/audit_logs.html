@@ -1,0 +1,59 @@
+{% extends "base.html" %}
+{% block title %}Audit Logs — Admin{% endblock %}
+{% block body_class %}admin-page{% endblock %}
+
+{% block layout %}
+{% include "partials/admin_sidebar.html" %}
+<div class="admin__main">
+  {% include "partials/admin_topbar.html" %}
+  <div class="admin__content">
+
+    <div class="page-header">
+      <h1 class="page-header__title">Audit Trail</h1>
+      <p class="page-header__sub">Complete activity log for compliance and security monitoring</p>
+    </div>
+
+    <div class="dash__card">
+      <div class="dash__card-header">
+        <h3>Activity Logs ({{ logs|length }})</h3>
+        <input type="text" id="logSearch" class="form__input form__input--sm" placeholder="Filter logs..."/>
+      </div>
+      <table class="table" id="logsTable">
+        <thead>
+          <tr><th>Timestamp</th><th>User</th><th>Role</th><th>Action</th><th>Detail</th><th>IP Address</th></tr>
+        </thead>
+        <tbody>
+          {% for log in logs %}
+          <tr>
+            <td class="mono text--muted">{{ log.created_at[:19] }}</td>
+            <td>{{ log.full_name or 'System' }}</td>
+            <td><span class="badge badge--outline">{{ log.email or '—' }}</span></td>
+            <td>
+              <span class="badge
+                {% if 'DELETE' in log.action %}badge--danger
+                {% elif 'LOGIN' in log.action %}badge--green
+                {% elif 'CREATE' in log.action %}badge--accent
+                {% else %}badge--outline{% endif %}">
+                {{ log.action }}
+              </span>
+            </td>
+            <td class="text--muted">{{ log.detail }}</td>
+            <td class="mono text--muted">{{ log.ip_address }}</td>
+          </tr>
+          {% else %}
+          <tr><td colspan="6" class="text-center text--muted p-4">No audit logs found.</td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+<script>
+document.getElementById('logSearch').addEventListener('input', function() {
+  const q = this.value.toLowerCase();
+  document.querySelectorAll('#logsTable tbody tr').forEach(row => {
+    row.style.display = row.textContent.toLowerCase().includes(q) ? '' : 'none';
+  });
+});
+</script>
+{% endblock %}

@@ -1,0 +1,209 @@
+{% extends "base.html" %}
+{% block title %}{{ post.title }}{% endblock %}
+{% block meta_desc %}{{ post.excerpt }}{% endblock %}
+{% block og_type %}article{% endblock %}
+{% block og_title %}{{ post.title }} — {{ site_settings.owner_name }}{% endblock %}
+{% block og_desc %}{{ post.excerpt }}{% endblock %}
+{% block og_image %}{% if post.cover_image %}{{ request.host_url }}static/{{ post.cover_image }}{% else %}{{ super() }}{% endif %}{% endblock %}
+{% block tw_title %}{{ post.title }}{% endblock %}
+{% block tw_desc %}{{ post.excerpt }}{% endblock %}
+{% block body_class %}public-page{% endblock %}
+
+{% block layout %}
+<nav class="nav" id="mainNav">
+  <div class="nav__inner">
+    <a href="{{ url_for('index') }}" class="nav__logo">
+      <span class="nav__logo-dot"></span>
+      <span>{{ site_settings.owner_name.split()[0] | upper }}</span>
+    </a>
+    <ul class="nav__links">
+      <li><a href="{{ url_for('index') }}" class="nav__link">Home</a></li>
+      <li><a href="{{ url_for('blog') }}" class="nav__link nav__link--active">Blog</a></li>
+      <li><a href="{{ url_for('contact') }}" class="nav__link">Contact</a></li>
+    </ul>
+    <div class="nav__actions">
+      <a href="{{ url_for('auth_login') }}" class="btn btn--ghost btn--sm"><i class="fas fa-lock"></i> Admin</a>
+    </div>
+  </div>
+</nav>
+
+<!-- Reading Progress Bar -->
+<div class="reading-bar" id="readingBar"></div>
+
+<div class="blog-post-wrap container">
+  <div class="blog-post-layout">
+
+    <!-- ── Main Article ── -->
+    <article class="blog-post">
+
+      <!-- Back -->
+      <a href="{{ url_for('blog') }}" class="blog-post__back">
+        <i class="fas fa-arrow-left"></i> Back to Blog
+      </a>
+
+      <!-- Meta header -->
+      <div class="blog-post__meta">
+        <span class="blog-cat">{{ post.category }}</span>
+        <span class="blog-meta-item"><i class="fas fa-clock"></i> {{ post.read_time }} min read</span>
+        <span class="blog-meta-item"><i class="fas fa-eye"></i> {{ post.views }} views</span>
+        <span class="blog-meta-item"><i class="fas fa-calendar"></i> {{ (post.published_at or post.created_at)[:10] }}</span>
+      </div>
+
+      <h1 class="blog-post__title">{{ post.title }}</h1>
+      {% if post.excerpt %}<p class="blog-post__lead">{{ post.excerpt }}</p>{% endif %}
+
+      <!-- Tags -->
+      {% if post.tags %}
+      <div class="blog-post__tags">
+        {% for tag in post.tags.split(',') %}
+        <a href="{{ url_for('blog', q=tag.strip()) }}" class="tech-tag">{{ tag.strip() }}</a>
+        {% endfor %}
+      </div>
+      {% endif %}
+
+      <!-- Cover Image -->
+      {% if post.cover_image %}
+      <div class="blog-post__cover">
+        <img src="{{ url_for('static', filename=post.cover_image) }}" alt="{{ post.title }}"/>
+      </div>
+      {% endif %}
+
+      <!-- Content -->
+      <div class="blog-post__content prose">
+        {{ post.content | safe }}
+      </div>
+
+      <!-- Share -->
+      <div class="blog-post__share">
+        <span class="blog-post__share-label">Share artikel ini:</span>
+        <a href="https://twitter.com/intent/tweet?text={{ post.title | urlencode }}&url={{ request.url | urlencode }}"
+           target="_blank" class="share-btn share-btn--twitter">
+          <i class="fab fa-twitter"></i> Twitter
+        </a>
+        <a href="https://www.linkedin.com/sharing/share-offsite/?url={{ request.url | urlencode }}"
+           target="_blank" class="share-btn share-btn--linkedin">
+          <i class="fab fa-linkedin"></i> LinkedIn
+        </a>
+        <a href="https://wa.me/?text={{ (post.title ~ ' ' ~ request.url) | urlencode }}"
+           target="_blank" class="share-btn share-btn--wa">
+          <i class="fab fa-whatsapp"></i> WhatsApp
+        </a>
+        <button class="share-btn share-btn--copy" onclick="copyLink()">
+          <i class="fas fa-link"></i> Copy Link
+        </button>
+      </div>
+
+      <!-- Author card -->
+      <div class="blog-post__author">
+        <div class="blog-post__author-avatar">
+          {% if site_settings.owner_avatar %}
+          <img src="{{ url_for('static', filename=site_settings.owner_avatar) }}" alt="{{ site_settings.owner_name }}"/>
+          {% else %}
+          <div class="blog-post__author-placeholder">{{ site_settings.owner_name[0] }}</div>
+          {% endif %}
+        </div>
+        <div class="blog-post__author-info">
+          <span class="blog-post__author-name">{{ site_settings.owner_name }}</span>
+          <span class="blog-post__author-title">{{ site_settings.owner_title }}</span>
+          <p class="blog-post__author-bio">Senior Full-Stack Engineer berbasis di Surabaya, Indonesia. Menulis tentang web development, arsitektur sistem, dan engineering best practices.</p>
+        </div>
+      </div>
+    </article>
+
+    <!-- ── Sidebar ── -->
+    <aside class="blog-sidebar">
+      <!-- Table of contents placeholder -->
+      <div class="blog-sidebar__card" id="tocCard">
+        <h4 class="blog-sidebar__title"><i class="fas fa-list-ul"></i> Table of Contents</h4>
+        <div id="tocList" class="toc-list"></div>
+      </div>
+
+      <!-- Recent posts -->
+      {% if recent_posts %}
+      <div class="blog-sidebar__card">
+        <h4 class="blog-sidebar__title"><i class="fas fa-fire"></i> Recent Articles</h4>
+        {% for rp in recent_posts %}
+        <a href="{{ url_for('blog_post', slug=rp.slug) }}" class="blog-sidebar__post">
+          {% if rp.cover_image %}
+          <img src="{{ url_for('static', filename=rp.cover_image) }}" alt="{{ rp.title }}" class="blog-sidebar__post-img"/>
+          {% else %}
+          <div class="blog-sidebar__post-img blog-sidebar__post-img--placeholder"><i class="fas fa-file-code"></i></div>
+          {% endif %}
+          <div>
+            <span class="blog-sidebar__post-title">{{ rp.title | truncate(55) }}</span>
+            <span class="blog-sidebar__post-meta">{{ rp.read_time }} min · {{ (rp.published_at or rp.created_at)[:10] }}</span>
+          </div>
+        </a>
+        {% endfor %}
+      </div>
+      {% endif %}
+
+      <!-- CTA -->
+      <div class="blog-sidebar__card blog-sidebar__cta">
+        <div class="blog-sidebar__cta-icon"><i class="fas fa-rocket"></i></div>
+        <h4>Butuh Bantuan Project?</h4>
+        <p>Saya siap membantu mewujudkan ide Anda menjadi produk digital yang luar biasa.</p>
+        <a href="{{ url_for('contact') }}" class="btn btn--primary btn--full btn--sm">
+          <i class="fas fa-paper-plane"></i> Hubungi Sekarang
+        </a>
+      </div>
+    </aside>
+
+  </div>
+</div>
+
+<footer class="footer" style="margin-top:4rem">
+  <div class="container footer__inner">
+    <span class="footer__copy">© {{ now.year }} {{ site_settings.owner_name }}</span>
+    <a href="{{ url_for('blog') }}" class="btn btn--ghost btn--sm"><i class="fas fa-arrow-left"></i> Back to Blog</a>
+  </div>
+</footer>
+
+<button class="float-btn float-btn--top" id="scrollTop">
+  <i class="fas fa-chevron-up"></i>
+  <svg class="float-btn__ring" viewBox="0 0 50 50">
+    <circle cx="25" cy="25" r="22" fill="none" stroke="var(--plasma)" stroke-width="2"
+            stroke-dasharray="138" stroke-dashoffset="138" id="scrollRing"/>
+  </svg>
+</button>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Reading progress bar
+const bar = document.getElementById('readingBar');
+window.addEventListener('scroll', () => {
+  const h = document.documentElement;
+  const pct = (window.scrollY / (h.scrollHeight - h.clientHeight)) * 100;
+  if (bar) bar.style.width = Math.min(pct, 100) + '%';
+}, {passive: true});
+
+// Auto-generate TOC from H2/H3 in content
+const content = document.querySelector('.prose');
+const tocList = document.getElementById('tocList');
+if (content && tocList) {
+  const headings = content.querySelectorAll('h2, h3');
+  if (headings.length > 0) {
+    headings.forEach((h, i) => {
+      const id = 'section-' + i;
+      h.id = id;
+      const link = document.createElement('a');
+      link.href = '#' + id;
+      link.className = 'toc-item toc-item--' + h.tagName.toLowerCase();
+      link.textContent = h.textContent;
+      tocList.appendChild(link);
+    });
+  } else {
+    document.getElementById('tocCard').style.display = 'none';
+  }
+}
+
+// Copy link
+function copyLink() {
+  navigator.clipboard.writeText(window.location.href).then(() => {
+    const btn = document.querySelector('.share-btn--copy');
+    if (btn) { btn.innerHTML = '<i class="fas fa-check"></i> Copied!'; setTimeout(() => btn.innerHTML = '<i class="fas fa-link"></i> Copy Link', 2000); }
+  });
+}
+</script>
+{% endblock %}
